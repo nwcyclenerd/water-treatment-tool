@@ -31,6 +31,12 @@
     .note { margin-top: 10px; padding: 10px; border-radius: 12px; background: #f1f5f9; color: #334155; font-size: 12px; line-height: 1.35; }
     .guidance { margin-top: 10px; padding: 10px; border-radius: 12px; background: #eef2ff; border: 1px solid #c7d2fe; color: #1e1b4b; font-size: 14px; line-height: 1.35; }
     .warning { margin-top: 10px; padding: 10px; border-radius: 12px; background: #fffbeb; border: 1px solid #fbbf24; color: #92400e; font-size: 13px; line-height: 1.35; }
+    .chart-controls { display: flex; gap: 6px; margin: 12px 0; }
+    .chart-controls button { flex: 1; padding: 8px; border-radius: 10px; border: none; background: #e2e8f0; font-weight: bold; cursor: pointer; font-size: 12px; }
+    .chart-controls button.active { background: #0f172a; color: white; }
+    .chart-wrap { margin-top: 12px; padding: 8px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .chart-label { font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.35; }
+    svg text { font-family: Arial, sans-serif; }
   </style>
 </head>
 <body>
@@ -140,6 +146,7 @@ const GAL_TO_L = 3.78541;
 const LB_TO_KG = 0.45359237;
 
 let isMetric = false;
+let chartSeries = { evap: true, bleed: true };
 
 const $ = (id) => document.getElementById(id);
 function toNumber(v){
@@ -148,6 +155,13 @@ function toNumber(v){
   return Number.isFinite(n) ? n : NaN;
 }
 function fmt(v, d){ return Number.isFinite(v) ? v.toFixed(d) : "—"; }
+function fmtShort(v, d = 1){
+  if (!Number.isFinite(v)) return "—";
+  const abs = Math.abs(v);
+  if (abs >= 1000000) return (v / 1000000).toFixed(d).replace(/\.0$/, "") + "M";
+  if (abs >= 1000) return (v / 1000).toFixed(d).replace(/\.0$/, "") + "K";
+  return v.toFixed(0);
+}
 
 function setUnits(metric){
   isMetric = metric;
@@ -264,6 +278,93 @@ function calcSlug(){
   `;
 }
 
+function buildCoolingChart(evapGpm, selectedCycles){
+  const minCycles = 2;
+  const maxCycles = 10;
+  const points = [];
+
+  for (let c = minCycles; c <= maxCycles; c += 0.5){
+    const bleed = evapGpm / (c - 1);
+    
+    points.push({ cycles: c, evap: evapGpm, bleed });
+  }
+
+  const values = [];
+  points.forEach(p => {
+    if (chartSeries.evap) values.push(p.evap);
+    if (chartSeries.bleed) values.push(p.bleed);
+    
+  });
+
+  const maxFlow = Math.max(...values, evapGpm) * 1.1;
+  const width = 360;
+  const height = 220;
+  const padL = 56;
+  const padR = 12;
+  const padT = 14;
+  const padB = 34;
+  const plotW = width - padL - padR;
+  const plotH = height - padT - padB;
+
+  function x(c){ return padL + ((c - minCycles) / (maxCycles - minCycles)) * plotW; }
+  function y(flow){ return padT + plotH - (flow / maxFlow) * plotH; }
+  function displayRate(flow){ return isMetric ? flow * GPM_TO_M3HR : flow; }
+  function pathFor(key){
+    return points.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.cycles).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
+  }
+
+  const selectedX = x(Math.max(minCycles, Math.min(maxCycles, selectedCycles)));
+  const yMaxLabel = fmtShort(displayRate(maxFlow));
+  const yMidLabel = fmtShort(displayRate(maxFlow / 2));
+  const rateUnit = isMetric ? "m³/hr" : "gpm";
+
+  let lines = "";
+  
+  if (chartSeries.evap) lines += `<path d="${pathFor("evap")}" fill="none" stroke="#0284c7" stroke-width="3" stroke-dasharray="6 4" />`;
+  if (chartSeries.bleed) lines += `<path d="${pathFor("bleed")}" fill="none" stroke="#dc2626" stroke-width="3" />`;
+
+  return `
+    <div class="chart-wrap">
+      <div class="section-title">Cycles vs Flow Rate</div>
+      <div class="chart-controls">
+        <button type="button" id="toggleBleed" class="${chartSeries.bleed ? "active" : ""}">Bleed</button>
+        <button type="button" id="toggleEvap" class="${chartSeries.evap ? "active" : ""}">Evap</button>
+      </div>
+      <svg viewBox="0 0 ${width} ${height}" width="100%" role="img" aria-label="Cooling tower cycles versus flow rate chart">
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + plotH}" stroke="#94a3b8" />
+        <line x1="${padL}" y1="${padT + plotH}" x2="${padL + plotW}" y2="${padT + plotH}" stroke="#94a3b8" />
+        <line x1="${padL}" y1="${y(maxFlow / 2)}" x2="${padL + plotW}" y2="${y(maxFlow / 2)}" stroke="#e2e8f0" />
+        <text x="8" y="${padT + 4}" font-size="10" fill="#64748b">${yMaxLabel}</text>
+        <text x="8" y="${y(maxFlow / 2) + 4}" font-size="10" fill="#64748b">${yMidLabel}</text>
+        <text x="${padL}" y="${height - 12}" font-size="10" fill="#64748b">2</text>
+        <text x="${x(6) - 4}" y="${height - 12}" font-size="10" fill="#64748b">6</text>
+        <text x="${padL + plotW - 12}" y="${height - 12}" font-size="10" fill="#64748b">10</text>
+        <text x="${width / 2 - 30}" y="${height - 2}" font-size="10" fill="#64748b">Cycles</text>
+        <text x="14" y="${padT + plotH - 10}" font-size="10" fill="#64748b" transform="rotate(-90 14 ${padT + plotH - 10})">${rateUnit}</text>
+        ${lines}
+        <line x1="${selectedX}" y1="${padT}" x2="${selectedX}" y2="${padT + plotH}" stroke="#64748b" stroke-dasharray="4 4" />
+      </svg>
+      <div class="chart-label">Lines show how bleed changes as cycles increase. Evaporation stays flat because the entered evaporation rate is held constant.</div>
+    </div>
+  `;
+}
+
+function attachChartToggleHandlers(){
+  const toggles = [
+    ["toggleBleed", "bleed"],
+    ["toggleEvap", "evap"]
+  ];
+  toggles.forEach(([id, key]) => {
+    const el = $(id);
+    if (el){
+      el.addEventListener("click", () => {
+        chartSeries[key] = !chartSeries[key];
+        calcCooling();
+      });
+    }
+  });
+}
+
 function calcCooling(){
   const evapInput = toNumber($("evapRate").value);
   const cycles = toNumber($("cycles").value);
@@ -295,10 +396,12 @@ function calcCooling(){
     <div class="result-main">${fmt(displayBleed, 2)} ${rateUnit} bleed</div>
     <div class="result-sub">${fmt(displayEvap, 2)} ${rateUnit} evaporation</div>
     <div class="result-sub">${fmt(displayMakeup, 2)} ${rateUnit} makeup</div>
-    <div class="result-sub">${fmt(bleedDaily, 0)} ${dailyUnit} bleed</div>
-    <div class="result-sub">${fmt(makeupDaily, 0)} ${dailyUnit} makeup</div>
+    <div class="result-sub">${fmtShort(bleedDaily)} ${dailyUnit} bleed</div>
+    <div class="result-sub">${fmtShort(makeupDaily)} ${dailyUnit} makeup</div>
     <div class="note">Assumes steady-state tower balance with makeup = evaporation + bleed. Drift, leaks, and basin losses are not included.</div>
+    ${buildCoolingChart(evapGpm, cycles)}
   `;
+  attachChartToggleHandlers();
 }
 
 $("btnImp").addEventListener("click", () => setUnits(false));
