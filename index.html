@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Water Treatment Calculator</title>
+
+  <!-- App Icon (iPhone Home Screen) -->
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <!-- Standard favicon -->
+  <link rel="icon" type="image/png" href="icon.png">
   <style>
     body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #111827; }
     .container { max-width: 440px; margin: 0 auto; padding: 16px; }
@@ -31,7 +37,7 @@
   <div class="container">
     <div class="header">
       <div class="title">Water Treatment Calculator</div>
-      <div class="subtitle">Feed Rate & Slug Dose</div>
+      <div class="subtitle">Feed Rate, Slug Dose & Cooling Balance</div>
     </div>
 
     <div class="uom">
@@ -42,6 +48,7 @@
     <div class="nav">
       <button id="btnFeed" type="button" class="active">Feed Rate</button>
       <button id="btnSlug" type="button">Slug Dose</button>
+      <button id="btnCooling" type="button">Cooling Balance</button>
     </div>
 
     <div id="feedSection">
@@ -107,6 +114,23 @@
       </div>
       <div id="slugResult" class="card"></div>
     </div>
+
+    <div id="coolingSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Cooling Tower Balance Inputs</div>
+        <div class="field">
+          <label id="evapLabel" for="evapRate">Evaporation Rate (gpm)</label>
+          <div class="helper">Enter known or estimated evaporation rate. If unknown, this can be estimated from heat load in a later version.</div>
+          <input id="evapRate" value="10" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label for="cycles">Cycles of Concentration</label>
+          <div class="helper">Cycles must be greater than 1. Example: 4 cycles.</div>
+          <input id="cycles" value="4" inputmode="decimal" />
+        </div>
+      </div>
+      <div id="coolingResult" class="card"></div>
+    </div>
   </div>
 
 <script>
@@ -138,9 +162,11 @@ function setUnits(metric){
   $("pumpCapacityHelper").innerText = metric
     ? "Optional. Enter calibrated or maximum pump output in liters per hour."
     : "Optional. Enter calibrated or maximum pump output in gallons per hour.";
+  $("evapLabel").innerText = metric ? "Evaporation Rate (m³/hr)" : "Evaporation Rate (gpm)";
 
   calcFeed();
   calcSlug();
+  calcCooling();
 }
 
 function calcFeed(){
@@ -238,27 +264,79 @@ function calcSlug(){
   `;
 }
 
+function calcCooling(){
+  const evapInput = toNumber($("evapRate").value);
+  const cycles = toNumber($("cycles").value);
+
+  if (!evapInput || !cycles){
+    $("coolingResult").innerHTML = `<div class="warning">Enter evaporation rate and cycles.</div>`;
+    return;
+  }
+  if (cycles <= 1){
+    $("coolingResult").innerHTML = `<div class="warning">Cycles must be greater than 1 to calculate bleed.</div>`;
+    return;
+  }
+
+  const evapGpm = isMetric ? evapInput / GPM_TO_M3HR : evapInput;
+  const bleedGpm = evapGpm / (cycles - 1);
+  const makeupGpm = evapGpm + bleedGpm;
+
+  const displayEvap = isMetric ? evapGpm * GPM_TO_M3HR : evapGpm;
+  const displayBleed = isMetric ? bleedGpm * GPM_TO_M3HR : bleedGpm;
+  const displayMakeup = isMetric ? makeupGpm * GPM_TO_M3HR : makeupGpm;
+  const rateUnit = isMetric ? "m³/hr" : "gpm";
+
+  const bleedDaily = isMetric ? bleedGpm * 1440 * GAL_TO_L / 1000 : bleedGpm * 1440;
+  const makeupDaily = isMetric ? makeupGpm * 1440 * GAL_TO_L / 1000 : makeupGpm * 1440;
+  const dailyUnit = isMetric ? "m³/day" : "gal/day";
+
+  $("coolingResult").innerHTML = `
+    <div class="section-title">Calculated Cooling Balance</div>
+    <div class="result-main">${fmt(displayBleed, 2)} ${rateUnit} bleed</div>
+    <div class="result-sub">${fmt(displayEvap, 2)} ${rateUnit} evaporation</div>
+    <div class="result-sub">${fmt(displayMakeup, 2)} ${rateUnit} makeup</div>
+    <div class="result-sub">${fmt(bleedDaily, 0)} ${dailyUnit} bleed</div>
+    <div class="result-sub">${fmt(makeupDaily, 0)} ${dailyUnit} makeup</div>
+    <div class="note">Assumes steady-state tower balance with makeup = evaporation + bleed. Drift, leaks, and basin losses are not included.</div>
+  `;
+}
+
 $("btnImp").addEventListener("click", () => setUnits(false));
 $("btnMet").addEventListener("click", () => setUnits(true));
 
 $("btnFeed").addEventListener("click", () => {
   $("feedSection").style.display = "block";
   $("slugSection").style.display = "none";
+  $("coolingSection").style.display = "none";
   $("btnFeed").classList.add("active");
   $("btnSlug").classList.remove("active");
+  $("btnCooling").classList.remove("active");
 });
 
 $("btnSlug").addEventListener("click", () => {
   $("feedSection").style.display = "none";
   $("slugSection").style.display = "block";
+  $("coolingSection").style.display = "none";
   $("btnSlug").classList.add("active");
   $("btnFeed").classList.remove("active");
+  $("btnCooling").classList.remove("active");
+});
+
+$("btnCooling").addEventListener("click", () => {
+  $("feedSection").style.display = "none";
+  $("slugSection").style.display = "none";
+  $("coolingSection").style.display = "block";
+  $("btnCooling").classList.add("active");
+  $("btnFeed").classList.remove("active");
+  $("btnSlug").classList.remove("active");
 });
 
 ["dose", "flow", "density", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("input", calcFeed));
 ["dose", "flow", "density", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("change", calcFeed));
 ["slugPpm", "volume", "slugDensity"].forEach(id => $(id).addEventListener("input", calcSlug));
 ["slugPpm", "volume", "slugDensity"].forEach(id => $(id).addEventListener("change", calcSlug));
+["evapRate", "cycles"].forEach(id => $(id).addEventListener("input", calcCooling));
+["evapRate", "cycles"].forEach(id => $(id).addEventListener("change", calcCooling));
 
 setUnits(false);
 </script>
