@@ -80,6 +80,7 @@
       <button id="btnInhib" type="button">Inhibitor Feed</button>
       <button id="btnBiocide" type="button">Biocide</button>
       <button id="btnPumpCal" type="button">Pump Cal</button>
+      <button id="btnLSI" type="button">LSI</button>
     </div>
 
     <div id="feedSection">
@@ -158,7 +159,6 @@
       </div>
       <div id="biocideResult" class="card"></div>
     </div>
-
     <div id="pumpCalSection" style="display:none;">
       <div class="card">
         <div class="section-title">Pump Calibration Inputs</div>
@@ -167,6 +167,53 @@
       </div>
       <div id="pumpCalResult" class="card"></div>
       <button id="usePumpCalBtn" type="button" style="margin-top:8px; padding:10px; border-radius:10px; border:none; background:#0ea5e9; color:white; font-weight:bold; cursor:pointer; width:100%;">Use as Pump Capacity</button>
+    </div>
+
+    <div id="lsiSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">LSI Inputs</div>
+
+        <div class="field">
+          <label for="lsiPh">pH</label>
+          <input id="lsiPh" value="7.8" inputmode="decimal" />
+        </div>
+
+        <div class="field">
+          <label id="lsiTempLabel" for="lsiTemp">Temperature (°F)</label>
+          <input id="lsiTemp" value="85" inputmode="decimal" />
+        </div>
+
+        <div class="field">
+          <label for="lsiTds">TDS (mg/L)</label>
+          <input id="lsiTds" value="1000" inputmode="decimal" />
+        </div>
+
+        <div class="field">
+          <label for="lsiCalcium">Calcium Hardness (mg/L as CaCO₃)</label>
+          <input id="lsiCalcium" value="300" inputmode="decimal" />
+        </div>
+
+        <div class="field">
+          <label for="lsiAlkalinity">Total Alkalinity (mg/L as CaCO₃)</label>
+          <input id="lsiAlkalinity" value="150" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label for="lsiPHeq">Equilibrium pH for PSI</label>
+          <div class="helper">Optional. If unknown, leave blank; PSI will not be calculated.</div>
+          <input id="lsiPHeq" inputmode="decimal" placeholder="Optional" />
+        </div>
+      </div>
+
+      <button id="clearLsiBtn" type="button" style="margin-top:8px; padding:10px; border-radius:10px; border:none; background:#e2e8f0; font-weight:bold; cursor:pointer; width:100%;">
+          Clear LSI Inputs
+        </button>
+    
+      <button id="useCoolingCyclesBtn" type="button"
+        style="margin-top:8px; padding:10px; border-radius:10px; border:none; background:#0ea5e9; color:white; font-weight:bold; cursor:pointer; width:100%;">
+        Use Cooling Balance Cycles
+      </button>
+
+      <div id="lsiResult" class="card"></div>
     </div>
   </div>
 

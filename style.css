@@ -24,3 +24,50 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #1
     .chart-wrap { margin-top: 12px; padding: 8px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
     .chart-label { font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.35; }
     svg text { font-family: Arial, sans-serif; }
+
+    .index-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+    }
+
+    .index-pill {
+    border-radius: 14px;
+    padding: 14px;
+    background: #e2e8f0;
+    text-align: center;
+    border: 1px solid #cbd5e1;
+    }
+
+    .index-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 4px;
+    }
+
+    .index-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    }
+
+    .index-pill.good {
+    background: #dcfce7;
+    border-color: #86efac;
+    }
+
+    .index-pill.watch {
+    background: #fef9c3;
+    border-color: #fde047;
+    }
+
+    .index-pill.caution {
+    background: #ffedd5;
+    border-color: #fdba74;
+    }
+
+    .index-pill.bad {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    }

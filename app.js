@@ -10,6 +10,7 @@
   let chartSeries = { evap: true, bleed: true };
   let latestCoolingBleedGpm = NaN;
   let latestPumpGph = NaN;
+  let useCoolingCyclesContext = false;
 
   const sections = [
     { key: "feed", sectionId: "feedSection", buttonId: "btnFeed" },
@@ -19,6 +20,7 @@
     { key: "inhib", sectionId: "inhibSection", buttonId: "btnInhib" },
     { key: "biocide", sectionId: "biocideSection", buttonId: "btnBiocide" },
     { key: "pumpCal", sectionId: "pumpCalSection", buttonId: "btnPumpCal" },
+    { key: "lsi", sectionId: "lsiSection", buttonId: "btnLSI" },
   ];
 
   function $(id){ return document.getElementById(id); }
@@ -87,11 +89,26 @@ function convertUnitFields(previousMetric, newMetric){
         : fmt(pumpValue / GAL_TO_L, 3);
     }
   }
-}
+
+  const tempFields = ['lsiTemp'];
+
+  tempFields.forEach(id => {
+  const el = $(id);
+    if (!el) return;
+
+    const value = toNumber(el.value);
+    if (!Number.isFinite(value)) return;
+
+    el.value = newMetric
+        ? fmt((value - 32) * 5 / 9, 1)
+        : fmt((value * 9 / 5) + 32, 1);
+    });
+  }
   function densityToLbGal(value, type){
     if (!Number.isFinite(value) || value <= 0) return NaN;
     return type === "lbgal" ? value : value * WATER_LB_PER_GAL;
   }
+
   function densityWarning(value, type){
     if (!Number.isFinite(value) || value <= 0) return "";
     if (type === "sg" && value > 1.5) return '<div class="warning">⚠️ Specific gravity is above 1.5. Confirm density entry.</div>';
@@ -256,6 +273,161 @@ function convertUnitFields(previousMetric, newMetric){
     $('pumpCalResult').innerHTML = '<div class="section-title">Calculated Pump Output</div><div class="result-main">' + fmt(mainValue, 3) + ' ' + mainUnit + '</div><div class="result-sub">' + fmt(altValue, 3) + ' ' + altUnit + '</div><div class="result-sub">' + fmt(isMetric ? volInput : volInput / 29.5735, 1) + ' ' + (isMetric ? 'mL' : 'fl oz') + ' collected in ' + fmt(minutes, 2) + ' min</div><div class="note">Use this calibrated output as pump capacity in the feed rate tools.</div>' + warning;
   }
 
+  function interpretLSI(lsi){
+    if (lsi > 0.5) return "Scaling tendency; calcium carbonate precipitation likely.";
+    if (lsi > 0.1) return "Slight scaling tendency.";
+    if (lsi >= -0.1) return "Near balanced.";
+    if (lsi >= -0.5) return "Slight corrosive / undersaturated tendency.";
+  return "Corrosive / undersaturated tendency.";
+  }
+
+  function calcSaturationPH(tempInput, tds, calcium, alkalinity){
+    const tempC = isMetric ? tempInput : (tempInput - 32) * 5 / 9;
+
+    const A = (Math.log10(tds) - 1) / 10;
+    const B = -13.12 * Math.log10(tempC + 273) + 34.55;
+    const C = Math.log10(calcium) - 0.4;
+    const D = Math.log10(alkalinity);
+
+  return (9.3 + A + B) - (C + D);
+  }
+
+  function interpretRSI(rsi){
+    if (rsi < 5.5) return "Heavy scaling tendency.";
+    if (rsi < 6.2) return "Scaling tendency.";
+    if (rsi <= 6.8) return "Near balanced.";
+    if (rsi <= 8.5) return "Corrosive / undersaturated tendency.";
+    return "Strong corrosive tendency.";
+  }
+
+  function overallCondition(lsi){
+    if (lsi > 0.5) return "⚠️ High scaling risk; evaluate cycles, calcium, alkalinity, and inhibitor.";
+    if (lsi < -0.5) return "⚠️ Corrosion risk; evaluate pH control and inhibitor program.";
+    return "✅ Operating in a controllable range.";
+  }
+
+  function lsiActionGuidance(lsi){
+    if (lsi > 0.5){
+        return "Action: Review cycles, calcium hardness, alkalinity, pH control, and inhibitor residual. Consider lowering cycles or tightening scale inhibitor control.";
+    }
+
+    if (lsi > 0.1){
+        return "Action: Monitor closely. Scaling tendency is present, but may be manageable with proper inhibitor control and stable cycles.";
+    }
+
+    if (lsi >= -0.1){
+        return "Action: Maintain current control range. System appears near calcium carbonate balance.";
+    }
+
+    if (lsi >= -0.5){
+        return "Action: Watch for corrosion tendency. Confirm pH, alkalinity, metallurgy, and corrosion inhibitor residual.";
+    }
+
+    return "Action: Corrosion tendency is elevated. Review pH/alkalinity control, inhibitor feed, metallurgy, and potential aggressive water conditions.";
+   }
+
+  function coolingCyclesGuidance(){
+    if (!useCoolingCyclesContext) return "";
+
+    const cyclesInput = toNumber($('cycles').value);
+    if (!Number.isFinite(cyclesInput) || cyclesInput <= 1){
+        return '<div class="guidance"><strong>Cooling Context</strong><div>Cooling cycles are not currently available or valid.</div></div>';
+    }
+
+    let message = "";
+
+    if (cyclesInput > 6){
+        message = "Cooling cycles are elevated. If LSI is positive, scaling risk may increase quickly as calcium and alkalinity concentrate.";
+    } else if (cyclesInput >= 3){
+        message = "Cooling cycles are in a common operating range. Compare LSI against actual inhibitor residual and system limits.";
+    } else {
+        message = "Cooling cycles are low. Scaling risk from concentration is lower, but corrosion tendency and water cost should still be reviewed.";
+    }
+
+    return '<div class="guidance"><strong>Cooling Context</strong><div>Current cycles: ' + fmt(cyclesInput, 2) + '</div><div>' + message + '</div></div>';
+}
+
+  function interpretPSI(psi){
+    if (psi < 4.5) return "Heavy scaling tendency.";
+    if (psi < 6.0) return "Scaling tendency.";
+    if (psi <= 7.0) return "Near balanced.";
+    return "Corrosive / undersaturated tendency.";
+  }
+
+  function indexClass(value, type){
+  if (!Number.isFinite(value)) return "";
+
+  if (type === "lsi"){
+    if (value > 0.5) return "bad";
+    if (value < -0.5) return "caution";
+    if (value > 0.1 || value < -0.1) return "watch";
+    return "good";
+  }
+
+  if (type === "rsi" || type === "psi"){
+    if (value < 5.5) return "bad";
+    if (value < 6.2) return "watch";
+    if (value <= 6.8) return "good";
+    if (value <= 8.5) return "watch";
+    return "caution";
+  }
+
+  return "";
+  }
+
+function resultPill(label, value, type){
+  return '<div class="index-pill ' + indexClass(value, type) + '">' +
+    '<div class="index-label">' + label + '</div>' +
+    '<div class="index-value">' + fmt(value, 2) + '</div>' +
+  '</div>';
+}
+
+  function calcLSI(){
+    const pH = toNumber($('lsiPh').value);
+    const tempInput = toNumber($('lsiTemp').value);
+    const tds = toNumber($('lsiTds').value);
+    const calcium = toNumber($('lsiCalcium').value);
+    const alkalinity = toNumber($('lsiAlkalinity').value);
+    const pHeq = toNumber($('lsiPHeq') ? $('lsiPHeq').value : "");
+
+   if (!pH || !tempInput || !tds || !calcium || !alkalinity){
+        $('lsiResult').innerHTML = '<div class="warning">Enter pH, temperature, TDS, calcium hardness, and total alkalinity.</div>';
+        return;
+    }
+
+    const pHs = calcSaturationPH(tempInput, tds, calcium, alkalinity);
+
+    const lsi = pH - pHs;
+    const rsi = (2 * pHs) - pH;
+    const psi = Number.isFinite(pHeq) ? (2 * pHs) - pHeq : NaN;
+
+    $('lsiResult').innerHTML =
+        '<div class="section-title">Calculated Saturation Indexes</div>' +
+
+        '<div class="result-main">' + fmt(lsi, 2) + ' LSI</div>' +
+        '<div class="result-sub">RSI: ' + fmt(rsi, 2) + '</div>' +
+        (Number.isFinite(psi) ? '<div class="result-sub">PSI: ' + fmt(psi, 2) + '</div>' : '') +
+        '<div class="result-sub">Calculated saturation pH: ' + fmt(pHs, 2) + '</div>' +
+
+        '<div class="result-sub">LSI: ' + interpretLSI(lsi) + '</div>' +
+        '<div class="result-sub">RSI: ' + interpretRSI(rsi) + '</div>' +
+        (Number.isFinite(psi) ? '<div class="result-sub">PSI: ' + interpretPSI(psi) + '</div>' : '') +
+
+        '<div class="guidance"><strong>System Condition</strong><div>' + overallCondition(lsi) + '</div></div>' +
+        '<div class="guidance"><strong>Recommended Field Check</strong><div>' + lsiActionGuidance(lsi) + '</div></div>' +
+        coolingCyclesGuidance() +
+        '<div class="note">LSI compares actual pH to saturation pH. RSI and PSI are derived from the same pHs value.</div>';
+    }
+
+  function clearLSI(){
+        ['lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => {
+            const el = $(id);
+            if (el) el.value = '';
+        });
+
+        $('lsiResult').innerHTML = '';
+   }
+
   function calcInhib(){
     syncCoolingBleedToInhib();
     const bleedInput = toNumber($('bleedRate').value);
@@ -345,7 +517,8 @@ function convertUnitFields(previousMetric, newMetric){
     $('bleedLabel').innerText = metric ? 'Bleed Rate (m³/hr)' : 'Bleed Rate (gpm)';
     $('pumpCapacityLabel').innerText = metric ? 'Pump Capacity (L/hr)' : 'Pump Capacity (gph)';
     $('recircLabel').innerText = metric ? 'Tower Recirculation Flow (m³/hr)' : 'Tower Recirculation Flow (gpm)';
-    calcFeed(); calcSlug(); calcCooling(); calcCycles(); calcInhib(); calcBiocide(); calcPumpCal();
+    if ($('lsiTempLabel')) $('lsiTempLabel').innerText = metric ? 'Temperature (°C)' : 'Temperature (°F)';
+    calcFeed(); calcSlug(); calcCooling(); calcCycles(); calcInhib(); calcBiocide(); calcPumpCal(); calcLSI();
   }
 
   function showSection(section){
@@ -404,6 +577,17 @@ function convertUnitFields(previousMetric, newMetric){
 
     ['pumpCalVolume','pumpCalTime'].forEach(id => $(id).addEventListener('input', calcPumpCal));
     ['pumpCalVolume','pumpCalTime'].forEach(id => $(id).addEventListener('change', calcPumpCal));
+
+    ['lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('input', calcLSI));
+    ['lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('change', calcLSI));
+    if ($('clearLsiBtn')) $('clearLsiBtn').addEventListener('click', clearLSI);
+
+    if ($('useCoolingCyclesBtn')) {
+    $('useCoolingCyclesBtn').addEventListener('click', () => {
+        useCoolingCyclesContext = true;
+        calcLSI();
+    });
+}
 
     $('useCoolingBleed').addEventListener('change', () => { syncCoolingBleedToInhib(); calcInhib(); });
     $('suggestLoadBtn').addEventListener('click', suggestLoadBySeason);
