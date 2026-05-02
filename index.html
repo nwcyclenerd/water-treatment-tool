@@ -16,8 +16,8 @@
     .header { border-radius: 16px; padding: 16px; margin-bottom: 12px; background: #111827; color: white; }
     .title { font-size: 22px; font-weight: bold; margin-bottom: 6px; }
     .subtitle { font-size: 13px; color: #d1d5db; line-height: 1.35; }
-    .nav, .uom { display: flex; gap: 8px; margin-bottom: 12px; }
-    .nav button, .uom button { flex: 1; padding: 10px; border-radius: 10px; border: none; background: #e2e8f0; font-weight: bold; cursor: pointer; }
+    .nav, .uom { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .nav button, .uom button { flex: 1 1 45%; padding: 10px; border-radius: 10px; border: none; background: #e2e8f0; font-weight: bold; cursor: pointer; }
     .nav button.active { background: #111827; color: white; }
     .uom button.active { background: #0ea5e9; color: white; }
     .card { border: 1px solid #d9dee7; border-radius: 16px; padding: 14px; margin-bottom: 12px; background: white; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08); }
@@ -43,7 +43,7 @@
   <div class="container">
     <div class="header">
       <div class="title">Water Treatment Calculator</div>
-      <div class="subtitle">Feed Rate, Slug Dose & Cooling Balance</div>
+      <div class="subtitle">Feed Rate, Slug Dose, Cycles & Cooling Balance</div>
     </div>
 
     <div class="uom">
@@ -54,7 +54,9 @@
     <div class="nav">
       <button id="btnFeed" type="button" class="active">Feed Rate</button>
       <button id="btnSlug" type="button">Slug Dose</button>
+      <button id="btnCycles" type="button">Cycles</button>
       <button id="btnCooling" type="button">Cooling Balance</button>
+      <button id="btnInhib" type="button">Inhibitor Feed</button>
     </div>
 
     <div id="feedSection">
@@ -121,13 +123,63 @@
       <div id="slugResult" class="card"></div>
     </div>
 
+    <div id="cyclesSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Cycles Calculator Inputs</div>
+        <div class="field">
+          <label for="cycleBasis">Cycle Basis</label>
+          <div class="helper">Select what value you are comparing. Use the same units for makeup and tower water.</div>
+          <select id="cycleBasis">
+            <option value="Conductivity">Conductivity</option>
+            <option value="Calcium">Calcium</option>
+            <option value="Silica">Silica</option>
+            <option value="Total Hardness">Total Hardness</option>
+            <option value="Chloride">Chloride</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="makeupCycleLabel" for="makeupCycleValue">Makeup Conductivity</label>
+          <input id="makeupCycleValue" value="250" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label id="towerCycleLabel" for="towerCycleValue">Tower Conductivity</label>
+          <input id="towerCycleValue" value="1000" inputmode="decimal" />
+        </div>
+      </div>
+      <div id="cyclesResult" class="card"></div>
+    </div>
+
     <div id="coolingSection" style="display:none;">
       <div class="card">
         <div class="section-title">Cooling Tower Balance Inputs</div>
         <div class="field">
-          <label id="evapLabel" for="evapRate">Evaporation Rate (gpm)</label>
-          <div class="helper">Enter known or estimated evaporation rate. If unknown, this can be estimated from heat load in a later version.</div>
-          <input id="evapRate" value="10" inputmode="decimal" />
+          <label for="evapMethod">Tower Evaporation Method</label>
+          <div class="helper">Select how to estimate tower evaporation.</div>
+          <select id="evapMethod">
+            <option value="anyTower">Any Tower: Flow × ΔT</option>
+            <option value="centrifugal">Tower Serving Centrifugal Chiller: Tons × 0.03</option>
+            <option value="absorption">Tower Serving Absorption Chiller: Tons × 0.04</option>
+          </select>
+        </div>
+        <div id="anyTowerInputs">
+          <div class="field">
+            <label id="recircLabel" for="recircFlow">Tower Recirculation Flow (gpm)</label>
+            <div class="helper">Use tower recirculation flow.</div>
+            <input id="recircFlow" value="1000" inputmode="decimal" />
+          </div>
+          <div class="field">
+            <label for="deltaT">Temperature Drop Across Tower (°F)</label>
+            <div class="helper">Typical ΔT ~10°F.</div>
+            <input id="deltaT" value="10" inputmode="decimal" />
+          </div>
+        </div>
+        <div id="chillerInputs" style="display:none;">
+          <div class="field">
+            <label for="chillerTons">Chiller Load (tons)</label>
+            <div class="helper">Enter chiller load (tons).</div>
+            <input id="chillerTons" value="500" inputmode="decimal" />
+          </div>
         </div>
         <div class="field">
           <label for="cycles">Cycles of Concentration</label>
@@ -136,6 +188,28 @@
         </div>
       </div>
       <div id="coolingResult" class="card"></div>
+        </div>
+
+    <div id="inhibSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Inhibitor Feed Inputs</div>
+        <div class="field">
+          <label id="bleedLabel" for="bleedRate">Bleed Rate (gpm)</label>
+          <div class="helper">Use tower blowdown rate.</div>
+          <input id="bleedRate" value="50" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label id="inhibDoseLabel" for="inhibPpm">Target Product Dose (ppm)</label>
+          <div class="helper">Product ppm (actives can be added later).</div>
+          <input id="inhibPpm" value="20" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label for="inhibDensity">Density (SG)</label>
+          <div class="helper">Optional for volume output.</div>
+          <input id="inhibDensity" value="1.11" inputmode="decimal" />
+        </div>
+      </div>
+      <div id="inhibResult" class="card"></div>
     </div>
   </div>
 
@@ -164,6 +238,8 @@ function fmtShort(v, d = 1){
 }
 
 function setUnits(metric){
+  $("bleedLabel").innerText = metric ? "Bleed Rate (m³/hr)" : "Bleed Rate (gpm)";
+  $("inhibDoseLabel").innerText = metric ? "Target Product Dose (mg/L)" : "Target Product Dose (ppm)";
   isMetric = metric;
   $("btnImp").classList.toggle("active", !metric);
   $("btnMet").classList.toggle("active", metric);
@@ -176,11 +252,13 @@ function setUnits(metric){
   $("pumpCapacityHelper").innerText = metric
     ? "Optional. Enter calibrated or maximum pump output in liters per hour."
     : "Optional. Enter calibrated or maximum pump output in gallons per hour.";
-  $("evapLabel").innerText = metric ? "Evaporation Rate (m³/hr)" : "Evaporation Rate (gpm)";
+  $("recircLabel").innerText = metric ? "Tower Recirculation Flow (m³/hr)" : "Tower Recirculation Flow (gpm)";
 
   calcFeed();
   calcSlug();
   calcCooling();
+  calcCycles();
+  calcInhib();
 }
 
 function calcFeed(){
@@ -278,6 +356,46 @@ function calcSlug(){
   `;
 }
 
+function calcCycles(){
+  const basis = $("cycleBasis").value;
+  const makeup = toNumber($("makeupCycleValue").value);
+  const tower = toNumber($("towerCycleValue").value);
+
+  $("makeupCycleLabel").innerText = `Makeup ${basis}`;
+  $("towerCycleLabel").innerText = `Tower ${basis}`;
+
+  if (!makeup || !tower){
+    $("cyclesResult").innerHTML = `<div class="warning">Enter makeup and tower values using the same units.</div>`;
+    return;
+  }
+  if (tower < makeup){
+    $("cyclesResult").innerHTML = `<div class="warning">Tower value is lower than makeup value. Confirm samples, units, and basis selection.</div>`;
+    return;
+  }
+
+  const cycles = tower / makeup;
+
+  let warning = "";
+  if (cycles < 1.2){
+    warning = `<div class="warning">⚠️ Calculated cycles are very low. Confirm blowdown, makeup source, or sample location.</div>`;
+  }
+  if (cycles > 10){
+    warning = `<div class="warning">⚠️ Calculated cycles are high. Confirm scaling limits, conductivity control, and chemistry program limits.</div>`;
+  }
+  if (basis === "Chloride"){
+    warning += `<div class="warning">⚠️ Chloride can be misleading where halogens, chloride-based chemistry, or contamination are present.</div>`;
+  }
+
+  $("cyclesResult").innerHTML = `
+    <div class="section-title">Calculated Cycles</div>
+    <div class="result-main">${fmt(cycles, 2)} cycles</div>
+    <div class="result-sub">Basis: ${basis}</div>
+    <div class="result-sub">Tower ÷ Makeup = ${fmt(tower, 2)} ÷ ${fmt(makeup, 2)}</div>
+    <div class="note">Cycles are calculated as tower concentration divided by makeup concentration. Use the same units for both values.</div>
+    ${warning}
+  `;
+}
+
 function buildCoolingChart(evapGpm, selectedCycles){
   const minCycles = 2;
   const maxCycles = 10;
@@ -365,12 +483,42 @@ function attachChartToggleHandlers(){
   });
 }
 
+function calcInhib(){
+  const bleedInput = toNumber($("bleedRate").value);
+  const dose = toNumber($("inhibPpm").value);
+  const sg = toNumber($("inhibDensity").value);
+
+  if (!bleedInput || !dose){
+    $("inhibResult").innerHTML = `<div class="warning">Enter bleed rate and product dose.</div>`;
+    return;
+  }
+
+  const bleedGpm = isMetric ? bleedInput / GPM_TO_M3HR : bleedInput;
+  const lbDay = dose * bleedGpm * 1440 * WATER_LB_PER_GAL / 1000000;
+  const galDay = sg ? lbDay / (sg * WATER_LB_PER_GAL) : NaN;
+
+  const displayMass = isMetric ? lbDay * LB_TO_KG : lbDay;
+  const displayVol = isMetric ? galDay * GAL_TO_L : galDay;
+  const massUnit = isMetric ? "kg/day" : "lb/day";
+  const volUnit = isMetric ? "L/day" : "gal/day";
+
+  $("inhibResult").innerHTML = `
+    <div class="section-title">Inhibitor Requirement</div>
+    <div class="result-main">${fmt(displayMass,2)} ${massUnit}</div>
+    <div class="result-sub">${Number.isFinite(displayVol)?fmt(displayVol,2)+" "+volUnit:"—"}</div>
+    <div class="note">Calculated from bleed × ppm. Represents product required to offset blowdown losses.</div>
+  `;
+}
+
 function calcCooling(){
-  const evapInput = toNumber($("evapRate").value);
+  const evapMethod = $("evapMethod").value;
   const cycles = toNumber($("cycles").value);
 
-  if (!evapInput || !cycles){
-    $("coolingResult").innerHTML = `<div class="warning">Enter evaporation rate and cycles.</div>`;
+  $("anyTowerInputs").style.display = evapMethod === "anyTower" ? "block" : "none";
+  $("chillerInputs").style.display = evapMethod === "anyTower" ? "none" : "block";
+
+  if (!cycles){
+    $("coolingResult").innerHTML = `<div class="warning">Enter cycles of concentration.</div>`;
     return;
   }
   if (cycles <= 1){
@@ -378,7 +526,41 @@ function calcCooling(){
     return;
   }
 
-  const evapGpm = isMetric ? evapInput / GPM_TO_M3HR : evapInput;
+  let evapGpm = NaN;
+  let methodNote = "";
+
+  if (evapMethod === "anyTower"){
+    const recircInput = toNumber($("recircFlow").value);
+    const deltaT = toNumber($("deltaT").value);
+    if (!recircInput || !deltaT){
+      $("coolingResult").innerHTML = `<div class="warning">Enter recirculation flow and temperature drop.</div>`;
+      return;
+    }
+    const recircGpm = isMetric ? recircInput / GPM_TO_M3HR : recircInput;
+    evapGpm = recircGpm * deltaT * 0.001;
+    methodNote = "Evaporation estimated using recirculation flow × ΔT × 0.001.";
+  }
+
+  if (evapMethod === "centrifugal"){
+    const tons = toNumber($("chillerTons").value);
+    if (!tons){
+      $("coolingResult").innerHTML = `<div class="warning">Enter chiller load in tons.</div>`;
+      return;
+    }
+    evapGpm = tons * 0.03;
+    methodNote = "Evaporation estimated for towers serving centrifugal chillers using tons × 0.03 gpm/ton.";
+  }
+
+  if (evapMethod === "absorption"){
+    const tons = toNumber($("chillerTons").value);
+    if (!tons){
+      $("coolingResult").innerHTML = `<div class="warning">Enter chiller load in tons.</div>`;
+      return;
+    }
+    evapGpm = tons * 0.04;
+    methodNote = "Evaporation estimated for towers serving absorption chillers using tons × 0.04 gpm/ton.";
+  }
+
   const bleedGpm = evapGpm / (cycles - 1);
   const makeupGpm = evapGpm + bleedGpm;
 
@@ -398,7 +580,7 @@ function calcCooling(){
     <div class="result-sub">${fmt(displayMakeup, 2)} ${rateUnit} makeup</div>
     <div class="result-sub">${fmtShort(bleedDaily)} ${dailyUnit} bleed</div>
     <div class="result-sub">${fmtShort(makeupDaily)} ${dailyUnit} makeup</div>
-    <div class="note">Assumes steady-state tower balance with makeup = evaporation + bleed. Drift, leaks, and basin losses are not included.</div>
+    <div class="note">${methodNote} Assumes steady-state (makeup = evap + bleed).</div>
     ${buildCoolingChart(evapGpm, cycles)}
   `;
   attachChartToggleHandlers();
@@ -407,41 +589,41 @@ function calcCooling(){
 $("btnImp").addEventListener("click", () => setUnits(false));
 $("btnMet").addEventListener("click", () => setUnits(true));
 
-$("btnFeed").addEventListener("click", () => {
-  $("feedSection").style.display = "block";
-  $("slugSection").style.display = "none";
-  $("coolingSection").style.display = "none";
-  $("btnFeed").classList.add("active");
-  $("btnSlug").classList.remove("active");
-  $("btnCooling").classList.remove("active");
-});
+function showSection(section){
+  $("inhibSection").style.display = section === "inhib" ? "block" : "none";
+  $("feedSection").style.display = section === "feed" ? "block" : "none";
+  $("slugSection").style.display = section === "slug" ? "block" : "none";
+  $("cyclesSection").style.display = section === "cycles" ? "block" : "none";
+  $("coolingSection").style.display = section === "cooling" ? "block" : "none";
 
-$("btnSlug").addEventListener("click", () => {
-  $("feedSection").style.display = "none";
-  $("slugSection").style.display = "block";
-  $("coolingSection").style.display = "none";
-  $("btnSlug").classList.add("active");
-  $("btnFeed").classList.remove("active");
-  $("btnCooling").classList.remove("active");
-});
+  $("btnFeed").classList.toggle("active", section === "feed");
+  $("btnSlug").classList.toggle("active", section === "slug");
+  $("btnCycles").classList.toggle("active", section === "cycles");
+  $("btnCooling").classList.toggle("active", section === "cooling");
+  $("btnInhib").classList.toggle("active", section === "inhib");
+}
 
-$("btnCooling").addEventListener("click", () => {
-  $("feedSection").style.display = "none";
-  $("slugSection").style.display = "none";
-  $("coolingSection").style.display = "block";
-  $("btnCooling").classList.add("active");
-  $("btnFeed").classList.remove("active");
-  $("btnSlug").classList.remove("active");
-});
+$("btnFeed").addEventListener("click", () => showSection("feed"));
+
+$("btnSlug").addEventListener("click", () => showSection("slug"));
+$("btnCycles").addEventListener("click", () => showSection("cycles"));
+$("btnCooling").addEventListener("click", () => showSection("cooling"));
+$("btnInhib").addEventListener("click", () => showSection("inhib"));
 
 ["dose", "flow", "density", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("input", calcFeed));
 ["dose", "flow", "density", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("change", calcFeed));
 ["slugPpm", "volume", "slugDensity"].forEach(id => $(id).addEventListener("input", calcSlug));
 ["slugPpm", "volume", "slugDensity"].forEach(id => $(id).addEventListener("change", calcSlug));
-["evapRate", "cycles"].forEach(id => $(id).addEventListener("input", calcCooling));
-["evapRate", "cycles"].forEach(id => $(id).addEventListener("change", calcCooling));
+["cycleBasis", "makeupCycleValue", "towerCycleValue"].forEach(id => $(id).addEventListener("input", calcCycles));
+["cycleBasis", "makeupCycleValue", "towerCycleValue"].forEach(id => $(id).addEventListener("change", calcCycles));
+["evapMethod", "recircFlow", "deltaT", "chillerTons", "cycles"].forEach(id => $(id).addEventListener("input", calcCooling));
+["bleedRate","inhibPpm","inhibDensity"].forEach(id => $(id).addEventListener("input", calcInhib));
+["bleedRate","inhibPpm","inhibDensity"].forEach(id => $(id).addEventListener("change", calcInhib));
+["evapMethod", "recircFlow", "deltaT", "chillerTons", "cycles"].forEach(id => $(id).addEventListener("change", calcCooling));
 
 setUnits(false);
+showSection("feed");
+calcInhib();
 </script>
 </body>
 </html>
