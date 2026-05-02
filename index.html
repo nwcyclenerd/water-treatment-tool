@@ -73,8 +73,15 @@
           <input id="flow" value="100" inputmode="decimal" />
         </div>
         <div class="field">
-          <label for="density">Density (SG)</label>
-          <div class="helper">Use specific gravity from the product label or SDS. Example: 1.11.</div>
+          <label for="densityType">Density Input Type</label>
+          <div class="helper">Select how density is provided.</div>
+          <select id="densityType">
+            <option value="sg">Specific Gravity</option>
+            <option value="lbgal">lb/gal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="densityLabel" for="density">Density (SG)</label>
           <input id="density" value="1.11" inputmode="decimal" />
         </div>
       </div>
@@ -115,8 +122,15 @@
           <input id="volume" value="1000" inputmode="decimal" />
         </div>
         <div class="field">
-          <label for="slugDensity">Density (SG)</label>
-          <div class="helper">Use specific gravity from the product label or SDS. Example: 1.11.</div>
+          <label for="slugDensityType">Density Input Type</label>
+          <div class="helper">Select how density is provided.</div>
+          <select id="slugDensityType">
+            <option value="sg">Specific Gravity</option>
+            <option value="lbgal">lb/gal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="slugDensityLabel" for="slugDensity">Density (SG)</label>
           <input id="slugDensity" value="1.11" inputmode="decimal" />
         </div>
       </div>
@@ -204,8 +218,15 @@
           <input id="inhibPpm" value="20" inputmode="decimal" />
         </div>
         <div class="field">
-          <label for="inhibDensity">Density (SG)</label>
-          <div class="helper">Optional for volume output.</div>
+          <label for="inhibDensityType">Density Input Type</label>
+          <div class="helper">Select how density is provided. Optional for volume output.</div>
+          <select id="inhibDensityType">
+            <option value="sg">Specific Gravity</option>
+            <option value="lbgal">lb/gal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="inhibDensityLabel" for="inhibDensity">Density (SG)</label>
           <input id="inhibDensity" value="1.11" inputmode="decimal" />
         </div>
       </div>
@@ -236,6 +257,23 @@ function fmtShort(v, d = 1){
   if (abs >= 1000) return (v / 1000).toFixed(d).replace(/\.0$/, "") + "K";
   return v.toFixed(0);
 }
+function densityToLbGal(value, type){
+  if (!Number.isFinite(value) || value <= 0) return NaN;
+  return type === "lbgal" ? value : value * WATER_LB_PER_GAL;
+}
+function updateDensityLabels(){
+  if ($("densityLabel")) $("densityLabel").innerText = $("densityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
+  if ($("slugDensityLabel")) $("slugDensityLabel").innerText = $("slugDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
+  if ($("inhibDensityLabel")) $("inhibDensityLabel").innerText = $("inhibDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
+}
+function densityWarning(value, type){
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (type === "sg" && value > 1.5) return `<div class="warning">⚠️ Specific gravity is above 1.5. Confirm density entry.</div>`;
+  if (type === "sg" && value < 1.0) return `<div class="warning">⚠️ Specific gravity is below 1.0. Confirm density entry.</div>`;
+  if (type === "lbgal" && value < 8.0) return `<div class="warning">⚠️ Density is below 8.0 lb/gal. Confirm density entry.</div>`;
+  if (type === "lbgal" && value > 12.5) return `<div class="warning">⚠️ Density is above 12.5 lb/gal. Confirm density entry.</div>`;
+  return "";
+}
 
 function setUnits(metric){
   $("bleedLabel").innerText = metric ? "Bleed Rate (m³/hr)" : "Bleed Rate (gpm)";
@@ -264,18 +302,21 @@ function setUnits(metric){
 function calcFeed(){
   const dose = toNumber($("dose").value);
   const flowInput = toNumber($("flow").value);
-  const sg = toNumber($("density").value);
+  const densityInput = toNumber($("density").value);
+  const densityType = $("densityType").value;
+  const lbPerGal = densityToLbGal(densityInput, densityType);
+  const densityCaution = densityWarning(densityInput, densityType);
   const pumpInput = toNumber($("pumpCapacity").value);
   const pumpType = $("pumpType").value;
 
-  if (!dose || !flowInput || !sg){
+  if (!dose || !flowInput || !lbPerGal){
     $("feedResult").innerHTML = `<div class="warning">Enter target dose, system flow, and density.</div>`;
     return;
   }
 
   const gpm = isMetric ? flowInput / GPM_TO_M3HR : flowInput;
   const lbDay = dose * gpm * 1440 * WATER_LB_PER_GAL / 1000000;
-  const galDay = lbDay / (sg * WATER_LB_PER_GAL);
+  const galDay = lbDay / lbPerGal;
   const galHr = galDay / 24;
 
   const displayDailyVol = isMetric ? galDay * GAL_TO_L : galDay;
@@ -316,6 +357,7 @@ function calcFeed(){
   }
 
   $("feedResult").innerHTML = `
+    ${densityCaution}
     <div class="section-title">Calculated Feed Requirement</div>
     <div class="result-main">${fmt(displayDailyVol, 2)} ${dailyUnit}</div>
     <div class="result-sub">${fmt(displayHourlyVol, 3)} ${hourlyUnit} continuous equivalent</div>
@@ -329,16 +371,19 @@ function calcFeed(){
 function calcSlug(){
   const dose = toNumber($("slugPpm").value);
   const volInput = toNumber($("volume").value);
-  const sg = toNumber($("slugDensity").value);
+  const densityInput = toNumber($("slugDensity").value);
+  const densityType = $("slugDensityType").value;
+  const lbPerGal = densityToLbGal(densityInput, densityType);
+  const densityCaution = densityWarning(densityInput, densityType);
 
-  if (!dose || !volInput || !sg){
+  if (!dose || !volInput || !lbPerGal){
     $("slugResult").innerHTML = `<div class="warning">Enter target dose, system volume, and density.</div>`;
     return;
   }
 
   const gallons = isMetric ? volInput / GAL_TO_L : volInput;
   const lb = dose * gallons / 120000;
-  const galProduct = lb / (sg * WATER_LB_PER_GAL);
+  const galProduct = lb / lbPerGal;
 
   const displayVol = isMetric ? galProduct * GAL_TO_L : galProduct;
   const displayMass = isMetric ? lb * LB_TO_KG : lb;
@@ -348,6 +393,7 @@ function calcSlug(){
   const smallUnit = isMetric ? "mL" : "fl oz";
 
   $("slugResult").innerHTML = `
+    ${densityCaution}
     <div class="section-title">Calculated Slug Addition</div>
     <div class="result-main">${fmt(displayVol, 3)} ${volUnit}</div>
     <div class="result-sub">${fmt(smallVol, 1)} ${smallUnit}</div>
@@ -486,7 +532,10 @@ function attachChartToggleHandlers(){
 function calcInhib(){
   const bleedInput = toNumber($("bleedRate").value);
   const dose = toNumber($("inhibPpm").value);
-  const sg = toNumber($("inhibDensity").value);
+  const densityInput = toNumber($("inhibDensity").value);
+  const densityType = $("inhibDensityType").value;
+  const lbPerGal = densityToLbGal(densityInput, densityType);
+  const densityCaution = densityWarning(densityInput, densityType);
 
   if (!bleedInput || !dose){
     $("inhibResult").innerHTML = `<div class="warning">Enter bleed rate and product dose.</div>`;
@@ -495,7 +544,7 @@ function calcInhib(){
 
   const bleedGpm = isMetric ? bleedInput / GPM_TO_M3HR : bleedInput;
   const lbDay = dose * bleedGpm * 1440 * WATER_LB_PER_GAL / 1000000;
-  const galDay = sg ? lbDay / (sg * WATER_LB_PER_GAL) : NaN;
+  const galDay = lbPerGal ? lbDay / lbPerGal : NaN;
 
   const displayMass = isMetric ? lbDay * LB_TO_KG : lbDay;
   const displayVol = isMetric ? galDay * GAL_TO_L : galDay;
@@ -503,6 +552,7 @@ function calcInhib(){
   const volUnit = isMetric ? "L/day" : "gal/day";
 
   $("inhibResult").innerHTML = `
+    ${densityCaution}
     <div class="section-title">Inhibitor Requirement</div>
     <div class="result-main">${fmt(displayMass,2)} ${massUnit}</div>
     <div class="result-sub">${Number.isFinite(displayVol)?fmt(displayVol,2)+" "+volUnit:"—"}</div>
@@ -610,17 +660,18 @@ $("btnCycles").addEventListener("click", () => showSection("cycles"));
 $("btnCooling").addEventListener("click", () => showSection("cooling"));
 $("btnInhib").addEventListener("click", () => showSection("inhib"));
 
-["dose", "flow", "density", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("input", calcFeed));
-["dose", "flow", "density", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("change", calcFeed));
-["slugPpm", "volume", "slugDensity"].forEach(id => $(id).addEventListener("input", calcSlug));
-["slugPpm", "volume", "slugDensity"].forEach(id => $(id).addEventListener("change", calcSlug));
+["dose", "flow", "density", "densityType", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("input", () => { updateDensityLabels(); calcFeed(); }));
+["dose", "flow", "density", "densityType", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("change", () => { updateDensityLabels(); calcFeed(); }));
+["slugPpm", "volume", "slugDensity", "slugDensityType"].forEach(id => $(id).addEventListener("input", () => { updateDensityLabels(); calcSlug(); }));
+["slugPpm", "volume", "slugDensity", "slugDensityType"].forEach(id => $(id).addEventListener("change", () => { updateDensityLabels(); calcSlug(); }));
 ["cycleBasis", "makeupCycleValue", "towerCycleValue"].forEach(id => $(id).addEventListener("input", calcCycles));
 ["cycleBasis", "makeupCycleValue", "towerCycleValue"].forEach(id => $(id).addEventListener("change", calcCycles));
 ["evapMethod", "recircFlow", "deltaT", "chillerTons", "cycles"].forEach(id => $(id).addEventListener("input", calcCooling));
-["bleedRate","inhibPpm","inhibDensity"].forEach(id => $(id).addEventListener("input", calcInhib));
-["bleedRate","inhibPpm","inhibDensity"].forEach(id => $(id).addEventListener("change", calcInhib));
+["bleedRate","inhibPpm","inhibDensity","inhibDensityType"].forEach(id => $(id).addEventListener("input", () => { updateDensityLabels(); calcInhib(); }));
+["bleedRate","inhibPpm","inhibDensity","inhibDensityType"].forEach(id => $(id).addEventListener("change", () => { updateDensityLabels(); calcInhib(); }));
 ["evapMethod", "recircFlow", "deltaT", "chillerTons", "cycles"].forEach(id => $(id).addEventListener("change", calcCooling));
 
+updateDensityLabels();
 setUnits(false);
 showSection("feed");
 calcInhib();
