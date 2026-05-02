@@ -43,7 +43,7 @@
   <div class="container">
     <div class="header">
       <div class="title">Water Treatment Calculator</div>
-      <div class="subtitle">Feed Rate, Slug Dose, Cycles & Cooling Balance</div>
+      <div class="subtitle">Feed Rate, Slug Dose, Cycles, Cooling Balance & Pump Calibration</div>
     </div>
 
     <div class="uom">
@@ -57,6 +57,7 @@
       <button id="btnCycles" type="button">Cycles</button>
       <button id="btnCooling" type="button">Cooling Balance</button>
       <button id="btnInhib" type="button">Inhibitor Feed</button>
+      <button id="btnPumpCal" type="button">Pump Cal</button>
     </div>
 
     <div id="feedSection">
@@ -246,6 +247,23 @@
       </div>
       <div id="inhibResult" class="card"></div>
     </div>
+
+    <div id="pumpCalSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Pump Calibration Inputs</div>
+        <div class="field">
+          <label id="pumpCalVolLabel" for="pumpCalVolume">Collected Volume (mL)</label>
+          <div class="helper">Measure product collected during a timed drawdown.</div>
+          <input id="pumpCalVolume" value="100" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label for="pumpCalTime">Collection Time (minutes)</label>
+          <div class="helper">Use actual timed collection duration.</div>
+          <input id="pumpCalTime" value="10" inputmode="decimal" />
+        </div>
+      </div>
+      <div id="pumpCalResult" class="card"></div>
+    </div>
   </div>
 
 <script>
@@ -305,6 +323,7 @@ function setUnits(metric){
   $("slugDoseLabel").innerText = metric ? "Target Product Dose (mg/L)" : "Target Product Dose (ppm)";
   $("flowLabel").innerText = metric ? "System Flow (m³/hr)" : "System Flow (gpm)";
   $("volLabel").innerText = metric ? "System Volume (L)" : "System Volume (gal)";
+  $("pumpCalVolLabel").innerText = metric ? "Collected Volume (mL)" : "Collected Volume (mL)";
   $("pumpCapacityLabel").innerText = metric ? "Pump Capacity (L/hr)" : "Pump Capacity (gph)";
   $("pumpCapacityHelper").innerText = metric
     ? "Optional. Enter calibrated or maximum pump output in liters per hour."
@@ -316,6 +335,7 @@ function setUnits(metric){
   calcCooling();
   calcCycles();
   calcInhib();
+  calcPumpCal();
 }
 
 function calcFeed(){
@@ -555,6 +575,44 @@ function syncCoolingBleedToInhib(){
   $("bleedRate").value = fmt(displayBleed, 3);
 }
 
+function calcPumpCal(){
+  const volInput = toNumber($("pumpCalVolume").value);
+  const minutes = toNumber($("pumpCalTime").value);
+
+  if (!volInput || !minutes){
+    $("pumpCalResult").innerHTML = `<div class="warning">Enter collected volume and collection time.</div>`;
+    return;
+  }
+
+  const liters = isMetric ? volInput / 1000 : volInput / 1000;
+  const gal = liters / GAL_TO_L;
+  const hours = minutes / 60;
+  const gph = gal / hours;
+  const lhr = gph * GAL_TO_L;
+
+  const mainValue = isMetric ? lhr : gph;
+  const mainUnit = isMetric ? "L/hr" : "gph";
+  const altValue = isMetric ? gph : lhr;
+  const altUnit = isMetric ? "gph" : "L/hr";
+
+  let warning = "";
+  if (minutes < 1){
+    warning = `<div class="warning">⚠️ Very short collection time. Use a longer drawdown for better accuracy.</div>`;
+  }
+  if (volInput < 10){
+    warning += `<div class="warning">⚠️ Small collected volume. Measurement error may be significant.</div>`;
+  }
+
+  $("pumpCalResult").innerHTML = `
+    <div class="section-title">Calculated Pump Output</div>
+    <div class="result-main">${fmt(mainValue, 3)} ${mainUnit}</div>
+    <div class="result-sub">${fmt(altValue, 3)} ${altUnit}</div>
+    <div class="result-sub">${fmt(isMetric ? volInput : volInput / 29.5735, 1)} ${isMetric ? "mL" : "fl oz"} collected in ${fmt(minutes, 2)} min</div>
+    <div class="note">Use this calibrated output as pump capacity in the feed rate tools.</div>
+    ${warning}
+  `;
+}
+
 function calcInhib(){
   syncCoolingBleedToInhib();
   const bleedInput = toNumber($("bleedRate").value);
@@ -689,6 +747,7 @@ $("btnImp").addEventListener("click", () => setUnits(false));
 $("btnMet").addEventListener("click", () => setUnits(true));
 
 function showSection(section){
+  $("pumpCalSection").style.display = section === "pumpCal" ? "block" : "none";
   $("inhibSection").style.display = section === "inhib" ? "block" : "none";
   $("feedSection").style.display = section === "feed" ? "block" : "none";
   $("slugSection").style.display = section === "slug" ? "block" : "none";
@@ -700,6 +759,7 @@ function showSection(section){
   $("btnCycles").classList.toggle("active", section === "cycles");
   $("btnCooling").classList.toggle("active", section === "cooling");
   $("btnInhib").classList.toggle("active", section === "inhib");
+  $("btnPumpCal").classList.toggle("active", section === "pumpCal");
 }
 
 $("btnFeed").addEventListener("click", () => showSection("feed"));
@@ -708,6 +768,7 @@ $("btnSlug").addEventListener("click", () => showSection("slug"));
 $("btnCycles").addEventListener("click", () => showSection("cycles"));
 $("btnCooling").addEventListener("click", () => showSection("cooling"));
 $("btnInhib").addEventListener("click", () => showSection("inhib"));
+$("btnPumpCal").addEventListener("click", () => showSection("pumpCal"));
 
 ["dose", "flow", "density", "densityType", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("input", () => { updateDensityLabels(); calcFeed(); }));
 ["dose", "flow", "density", "densityType", "pumpCapacity", "pumpType"].forEach(id => $(id).addEventListener("change", () => { updateDensityLabels(); calcFeed(); }));
@@ -720,12 +781,15 @@ $("btnInhib").addEventListener("click", () => showSection("inhib"));
 ["bleedRate","inhibPpm","inhibDensity","inhibDensityType"].forEach(id => $(id).addEventListener("change", () => { updateDensityLabels(); calcInhib(); }));
 $("useCoolingBleed").addEventListener("change", () => { syncCoolingBleedToInhib(); calcInhib(); });
 $("suggestLoadBtn").addEventListener("click", suggestLoadBySeason);
+["pumpCalVolume", "pumpCalTime"].forEach(id => $(id).addEventListener("input", calcPumpCal));
+["pumpCalVolume", "pumpCalTime"].forEach(id => $(id).addEventListener("change", calcPumpCal));
 ["evapMethod", "recircFlow", "deltaT", "chillerTons", "cycles"].forEach(id => $(id).addEventListener("change", calcCooling));
 
 updateDensityLabels();
 setUnits(false);
 showSection("feed");
 calcInhib();
+calcPumpCal();
 </script>
 </body>
 </html>
