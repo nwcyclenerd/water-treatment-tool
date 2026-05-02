@@ -347,6 +347,27 @@ function convertUnitFields(previousMetric, newMetric){
     return '<div class="guidance"><strong>Cooling Context</strong><div>Current cycles: ' + fmt(cyclesInput, 2) + '</div><div>' + message + '</div></div>';
 }
 
+  function lsiInputInstruction(){
+  const mode = $('lsiInputMode') ? $('lsiInputMode').value : 'direct';
+
+  if (mode === 'estimated'){
+    const cyclesVal = toNumber($('cycles').value);
+
+    return '<div class="guidance">' +
+      '<strong>How to Use (Estimated Mode)</strong>' +
+      '<div>Enter MAKEUP water values for TDS, calcium, and alkalinity.</div>' +
+      '<div>Cycles will be pulled from Cooling Balance: ' + (Number.isFinite(cyclesVal) ? fmt(cyclesVal, 2) : '—') + '</div>' +
+      '<div>System will estimate tower water chemistry automatically.</div>' +
+    '</div>';
+  }
+
+  return '<div class="guidance">' +
+    '<strong>How to Use (Direct Mode)</strong>' +
+    '<div>Enter actual tower water test results.</div>' +
+    '<div>Do NOT use makeup water values in this mode.</div>' +
+  '</div>';
+}
+
   function interpretPSI(psi){
     if (psi < 4.5) return "Heavy scaling tendency.";
     if (psi < 6.0) return "Scaling tendency.";
@@ -389,8 +410,9 @@ function resultPill(label, value, type){
     const calcium = toNumber($('lsiCalcium').value);
     const alkalinity = toNumber($('lsiAlkalinity').value);
     const pHeq = toNumber($('lsiPHeq') ? $('lsiPHeq').value : "");
+    const inputMode = $('lsiInputMode') ? $('lsiInputMode').value : 'direct';
 
-   if (!pH || !tempInput || !tds || !calcium || !alkalinity){
+    if (!Number.isFinite(pH) || !Number.isFinite(tempInput) || !Number.isFinite(tds) || !Number.isFinite(calcium) || !Number.isFinite(alkalinity)){
         $('lsiResult').innerHTML = '<div class="warning">Enter pH, temperature, TDS, calcium hardness, and total alkalinity.</div>';
         return;
     }
@@ -403,6 +425,7 @@ function resultPill(label, value, type){
 
     $('lsiResult').innerHTML =
         '<div class="section-title">Calculated Saturation Indexes</div>' +
+        lsiInputInstruction() +
 
         '<div class="result-main">' + fmt(lsi, 2) + ' LSI</div>' +
         '<div class="result-sub">RSI: ' + fmt(rsi, 2) + '</div>' +
@@ -416,7 +439,7 @@ function resultPill(label, value, type){
         '<div class="guidance"><strong>System Condition</strong><div>' + overallCondition(lsi) + '</div></div>' +
         '<div class="guidance"><strong>Recommended Field Check</strong><div>' + lsiActionGuidance(lsi) + '</div></div>' +
         coolingCyclesGuidance() +
-        '<div class="note">LSI compares actual pH to saturation pH. RSI and PSI are derived from the same pHs value.</div>';
+        '<div class="note">Input mode: ' + (inputMode === 'estimated' ? 'Estimated from Makeup + Cycles' : 'Direct Tower Water Inputs') + '. LSI compares actual pH to saturation pH. RSI and PSI are derived from the same pHs value.</div>';
     }
 
   function clearLSI(){
@@ -578,16 +601,21 @@ function resultPill(label, value, type){
     ['pumpCalVolume','pumpCalTime'].forEach(id => $(id).addEventListener('input', calcPumpCal));
     ['pumpCalVolume','pumpCalTime'].forEach(id => $(id).addEventListener('change', calcPumpCal));
 
-    ['lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('input', calcLSI));
-    ['lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('change', calcLSI));
+    ['lsiInputMode','lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('input', calcLSI));
+    ['lsiInputMode','lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('change', calcLSI));
     if ($('clearLsiBtn')) $('clearLsiBtn').addEventListener('click', clearLSI);
 
     if ($('useCoolingCyclesBtn')) {
-    $('useCoolingCyclesBtn').addEventListener('click', () => {
-        useCoolingCyclesContext = true;
-        calcLSI();
-    });
-}
+        $('useCoolingCyclesBtn').addEventListener('click', () => {
+            useCoolingCyclesContext = true;
+
+            if ($('lsiInputMode')) {
+                $('lsiInputMode').value = 'estimated';
+            }
+
+            calcLSI();
+        });
+    }
 
     $('useCoolingBleed').addEventListener('change', () => { syncCoolingBleedToInhib(); calcInhib(); });
     $('suggestLoadBtn').addEventListener('click', suggestLoadBySeason);

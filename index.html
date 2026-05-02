@@ -174,6 +174,17 @@
         <div class="section-title">LSI Inputs</div>
 
         <div class="field">
+          <label for="lsiInputMode">LSI Input Mode</label>
+          <div class="helper">
+            Direct Tower Water Inputs = actual recirculating tower water test results. Estimate from Makeup + Cycles = makeup water values multiplied by cycles to estimate tower water chemistry.
+          </div>
+          <select id="lsiInputMode">
+            <option value="direct">Direct Tower Water Inputs</option>
+            <option value="estimated">Estimate from Makeup + Cycles</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="lsiPh">pH</label>
           <input id="lsiPh" value="7.8" inputmode="decimal" />
         </div>
