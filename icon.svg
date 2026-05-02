@@ -1,0 +1,20 @@
+<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="url(#grad)"/>
+
+  <!-- Water droplet -->
+  <path d="M90 35 C70 65, 55 85, 55 105 A35 35 0 0 0 125 105 C125 85, 110 65, 90 35Z"
+        fill="white" opacity="0.9"/>
+
+  <!-- Gear (simplified) -->
+  <circle cx="90" cy="110" r="10" fill="#1e3a8a"/>
+  <circle cx="90" cy="110" r="5" fill="white"/>
+
+</svg>

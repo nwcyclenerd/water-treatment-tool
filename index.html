@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Treatment Calculator</title>
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" type="image/png" href="icon.png">
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #111827; }
+    .container { max-width: 440px; margin: 0 auto; padding: 16px; }
+    .header { border-radius: 16px; padding: 16px; margin-bottom: 12px; background: #111827; color: white; }
+    .title { font-size: 22px; font-weight: bold; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #d1d5db; line-height: 1.35; }
+    .nav, .uom { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .nav button, .uom button { flex: 1 1 45%; padding: 10px; border-radius: 10px; border: none; background: #e2e8f0; font-weight: bold; cursor: pointer; }
+    .nav button.active { background: #111827; color: white; }
+    .uom button.active { background: #0ea5e9; color: white; }
+    .card { border: 1px solid #d9dee7; border-radius: 16px; padding: 14px; margin-bottom: 12px; background: white; box-shadow: 0 1px 3px rgba(15,23,42,0.08); }
+    .section-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; }
+    .field { margin-bottom: 14px; }
+    label { font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px; }
+    .helper { font-size: 12px; color: #64748b; margin-bottom: 6px; line-height: 1.35; }
+    input, select { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: white; }
+    .result-main { font-size: 28px; font-weight: bold; margin-bottom: 6px; }
+    .result-sub { font-size: 14px; color: #475569; margin-bottom: 4px; }
+    .note { margin-top: 10px; padding: 10px; border-radius: 12px; background: #f1f5f9; color: #334155; font-size: 12px; line-height: 1.35; }
+    .guidance { margin-top: 10px; padding: 10px; border-radius: 12px; background: #eef2ff; border: 1px solid #c7d2fe; color: #1e1b4b; font-size: 14px; line-height: 1.35; }
+    .warning { margin-top: 10px; padding: 10px; border-radius: 12px; background: #fffbeb; border: 1px solid #fbbf24; color: #92400e; font-size: 13px; line-height: 1.35; }
+    .chart-controls { display: flex; gap: 6px; margin: 12px 0; }
+    .chart-controls button { flex: 1; padding: 8px; border-radius: 10px; border: none; background: #e2e8f0; font-weight: bold; cursor: pointer; font-size: 12px; }
+    .chart-controls button.active { background: #0f172a; color: white; }
+    .chart-wrap { margin-top: 12px; padding: 8px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .chart-label { font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.35; }
+    svg text { font-family: Arial, sans-serif; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">Water Treatment Calculator</div>
+      <div class="subtitle">Feed Rate, Slug Dose, Cycles, Cooling Balance, Inhibitor Feed, Biocide & Pump Cal</div>
+    </div>
+
+    <div class="uom">
+      <button id="btnImp" type="button" class="active">Imperial</button>
+      <button id="btnMet" type="button">Metric</button>
+    </div>
+
+    <div class="nav">
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <!-- Cooling Calculators -->
+      <button id="btnFeed" type="button" class="active">Feed Rate</button>
+      <button id="btnSlug" type="button">Slug Dose</button>
+      <button id="btnCycles" type="button">Cycles</button>
+      <button id="btnCooling" type="button">Cooling Balance</button>
+      <button id="btnInhib" type="button">Inhibitor Feed</button>
+      <button id="btnBiocide" type="button">Biocide</button>
+      <button id="btnPumpCal" type="button">Pump Cal</button>
+    </div>
+
+    <div id="feedSection">
+      <div class="card">
+        <div class="section-title">Feed Rate Inputs</div>
+        <div class="field"><label id="feedDoseLabel" for="dose">Target Product Dose (ppm)</label><div class="helper">Use product ppm for now. Active-based dosing can be added later.</div><input id="dose" value="20" inputmode="decimal" /></div>
+        <div class="field"><label id="flowLabel" for="flow">System Flow (gpm)</label><div class="helper">Use the treated stream flow. Do not use pump output unless it is actually the treated water flow.</div><input id="flow" value="100" inputmode="decimal" /></div>
+        <div class="field"><label for="densityType">Density Input Type</label><div class="helper">Select how density is provided.</div><select id="densityType"><option value="sg">Specific Gravity</option><option value="lbgal">lb/gal</option></select></div>
+        <div class="field"><label id="densityLabel" for="density">Density (SG)</label><input id="density" value="1.11" inputmode="decimal" /></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Pump Setup Optional</div>
+        <div class="field"><label for="pumpType">Pump Control Type</label><div class="helper">Choose how the pump will be adjusted in the field. Settings are starting points and should be confirmed by calibration or drawdown.</div><select id="pumpType"><option value="continuous">Continuous gph/L/hr Setpoint</option><option value="timer">Timer-Based Runtime</option><option value="speed">Pump Speed Only (%)</option><option value="speedStroke">Pump Speed + Stroke (%)</option><option value="spm">SPM / Percent Output</option></select></div>
+        <div class="field"><label id="pumpCapacityLabel" for="pumpCapacity">Pump Capacity (gph)</label><div id="pumpCapacityHelper" class="helper">Optional. Enter calibrated or maximum pump output.</div><input id="pumpCapacity" inputmode="decimal" placeholder="Example: 1.0" /></div>
+      </div>
+      <div id="feedResult" class="card"></div>
+    </div>
+
+    <div id="slugSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Slug Dose Inputs</div>
+        <div class="field"><label id="slugDoseLabel" for="slugPpm">Target Product Dose (ppm)</label><div class="helper">One-time product addition to reach a target product dose.</div><input id="slugPpm" value="100" inputmode="decimal" /></div>
+        <div class="field"><label id="volLabel" for="volume">System Volume (gal)</label><input id="volume" value="1000" inputmode="decimal" /></div>
+        <div class="field"><label for="slugDensityType">Density Input Type</label><div class="helper">Select how density is provided.</div><select id="slugDensityType"><option value="sg">Specific Gravity</option><option value="lbgal">lb/gal</option></select></div>
+        <div class="field"><label id="slugDensityLabel" for="slugDensity">Density (SG)</label><input id="slugDensity" value="1.11" inputmode="decimal" /></div>
+      </div>
+      <div id="slugResult" class="card"></div>
+    </div>
+
+    <div id="cyclesSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Cycles Calculator Inputs</div>
+        <div class="field"><label for="cycleBasis">Cycle Basis</label><div class="helper">Select what value you are comparing. Use the same units for makeup and tower water.</div><select id="cycleBasis"><option value="Conductivity">Conductivity</option><option value="Calcium">Calcium</option><option value="Silica">Silica</option><option value="Total Hardness">Total Hardness</option><option value="Chloride">Chloride</option><option value="Other">Other</option></select></div>
+        <div class="field"><label id="makeupCycleLabel" for="makeupCycleValue">Makeup Conductivity</label><input id="makeupCycleValue" value="250" inputmode="decimal" /></div>
+        <div class="field"><label id="towerCycleLabel" for="towerCycleValue">Tower Conductivity</label><input id="towerCycleValue" value="1000" inputmode="decimal" /></div>
+      </div>
+      <div id="cyclesResult" class="card"></div>
+    </div>
+
+    <div id="coolingSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Cooling Tower Balance Inputs</div>
+        <div class="field"><label for="evapMethod">Tower Evaporation Method</label><div class="helper">Select how to estimate tower evaporation.</div><select id="evapMethod"><option value="anyTower">Any Tower: Flow × ΔT</option><option value="centrifugal">Tower Serving Centrifugal Chiller: Tons × 0.03</option><option value="absorption">Tower Serving Absorption Chiller: Tons × 0.04</option></select></div>
+        <div id="anyTowerInputs">
+          <div class="field"><label id="recircLabel" for="recircFlow">Tower Recirculation Flow (gpm)</label><div class="helper">Use tower recirculation flow.</div><input id="recircFlow" value="1000" inputmode="decimal" /></div>
+          <div class="field"><label for="deltaT">Temperature Drop Across Tower (°F)</label><div class="helper">Typical ΔT ~10°F.</div><input id="deltaT" value="10" inputmode="decimal" /></div>
+        </div>
+        <div id="chillerInputs" style="display:none;">
+          <div class="field"><label for="chillerTons">Chiller Load (tons)</label><div class="helper">Enter chiller load (tons).</div><input id="chillerTons" value="500" inputmode="decimal" /></div>
+          <div class="field" id="loadPercentField"><label for="loadPercent">Percent Load (%)</label><div class="helper">Adjust for actual operating load (default 100%).</div><input id="loadPercent" value="100" inputmode="decimal" /><button id="suggestLoadBtn" type="button" style="margin-top:8px; padding:8px 10px; border-radius:10px; border:none; background:#e2e8f0; font-weight:bold; cursor:pointer;">Suggest by Season</button><div id="loadSuggestNote" class="helper"></div></div>
+        </div>
+        <div class="field"><label for="cycles">Cycles of Concentration</label><div class="helper">Cycles must be greater than 1. Example: 4 cycles.</div><input id="cycles" value="4" inputmode="decimal" /></div>
+      </div>
+      <div id="coolingResult" class="card"></div>
+    </div>
+
+    <div id="inhibSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Inhibitor Feed Inputs</div>
+        <div class="field"><label><input id="useCoolingBleed" type="checkbox" style="width:auto; margin-right:6px;" />Use bleed from Cooling Balance</label><div class="helper">Optional. Pulls the latest calculated bleed rate from Cooling Balance.</div></div>
+        <div class="field"><label id="bleedLabel" for="bleedRate">Bleed Rate (gpm)</label><div class="helper">Use tower blowdown rate.</div><input id="bleedRate" value="50" inputmode="decimal" /></div>
+        <div class="field"><label id="inhibDoseLabel" for="inhibPpm">Target Product Dose (ppm)</label><div class="helper">Product ppm (actives can be added later).</div><input id="inhibPpm" value="20" inputmode="decimal" /></div>
+        <div class="field"><label for="inhibDensityType">Density Input Type</label><div class="helper">Select how density is provided. Optional for volume output.</div><select id="inhibDensityType"><option value="sg">Specific Gravity</option><option value="lbgal">lb/gal</option></select></div>
+        <div class="field"><label id="inhibDensityLabel" for="inhibDensity">Density (SG)</label><input id="inhibDensity" value="1.11" inputmode="decimal" /></div>
+      </div>
+      <div id="inhibResult" class="card"></div>
+    </div>
+
+    <div id="biocideSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Biocide Dose Inputs</div>
+        <div class="field"><label id="biocideDoseLabel" for="biocidePpm">Target Product Dose (ppm)</label><div class="helper">One-time biocide addition based on known system volume.</div><input id="biocidePpm" value="100" inputmode="decimal" /></div>
+        <div class="field"><label id="biocideVolumeLabel" for="biocideVolume">System Volume (gal)</label><div class="helper">Enter known or estimated system volume.</div><input id="biocideVolume" value="1000" inputmode="decimal" /></div>
+        <div class="field"><label for="biocideDensityType">Density Input Type</label><div class="helper">Select how density is provided.</div><select id="biocideDensityType"><option value="sg">Specific Gravity</option><option value="lbgal">lb/gal</option></select></div>
+        <div class="field"><label id="biocideDensityLabel" for="biocideDensity">Density (SG)</label><input id="biocideDensity" value="1.11" inputmode="decimal" /></div>
+      </div>
+      <div id="biocideResult" class="card"></div>
+    </div>
+
+    <div id="pumpCalSection" style="display:none;">
+      <div class="card">
+        <div class="section-title">Pump Calibration Inputs</div>
+        <div class="field"><label id="pumpCalVolLabel" for="pumpCalVolume">Collected Volume (mL)</label><div class="helper">Measure product collected during a timed drawdown.</div><input id="pumpCalVolume" value="100" inputmode="decimal" /></div>
+        <div class="field"><label for="pumpCalTime">Collection Time (minutes)</label><div class="helper">Use actual timed collection duration.</div><input id="pumpCalTime" value="10" inputmode="decimal" /></div>
+      </div>
+      <div id="pumpCalResult" class="card"></div>
+      <button id="usePumpCalBtn" type="button" style="margin-top:8px; padding:10px; border-radius:10px; border:none; background:#0ea5e9; color:white; font-weight:bold; cursor:pointer; width:100%;">Use as Pump Capacity</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  const WATER_LB_PER_GAL = 8.34;
+  const GPM_TO_M3HR = 0.2271247;
+  const GAL_TO_L = 3.78541;
+  const LB_TO_KG = 0.45359237;
+
+  let isMetric = false;
+  let chartSeries = { evap: true, bleed: true };
+  let latestCoolingBleedGpm = NaN;
+  let latestPumpGph = NaN;
+
+  const sections = [
+    { key: "feed", sectionId: "feedSection", buttonId: "btnFeed" },
+    { key: "slug", sectionId: "slugSection", buttonId: "btnSlug" },
+    { key: "cycles", sectionId: "cyclesSection", buttonId: "btnCycles" },
+    { key: "cooling", sectionId: "coolingSection", buttonId: "btnCooling" },
+    { key: "inhib", sectionId: "inhibSection", buttonId: "btnInhib" },
+    { key: "biocide", sectionId: "biocideSection", buttonId: "btnBiocide" },
+    { key: "pumpCal", sectionId: "pumpCalSection", buttonId: "btnPumpCal" },
+  ];
+
+  function $(id){ return document.getElementById(id); }
+  function toNumber(v){
+    if (v === null || v === undefined || String(v).trim() === "") return NaN;
+    const n = Number(String(v).replace(/,/g, ""));
+    return Number.isFinite(n) ? n : NaN;
+  }
+  function fmt(v, d){ return Number.isFinite(v) ? v.toFixed(d) : "—"; }
+  function fmtShort(v, d){
+    d = d === undefined ? 1 : d;
+    if (!Number.isFinite(v)) return "—";
+    const abs = Math.abs(v);
+    if (abs >= 1000000) return (v / 1000000).toFixed(d).replace(/\.0$/, "") + "M";
+    if (abs >= 1000) return (v / 1000).toFixed(d).replace(/\.0$/, "") + "K";
+    return v.toFixed(0);
+  }
+  function fmtComma(v, d){
+    d = d === undefined ? 0 : d;
+    if (!Number.isFinite(v)) return "—";
+    return Number(v.toFixed(d)).toLocaleString();
+  }
+  function densityToLbGal(value, type){
+    if (!Number.isFinite(value) || value <= 0) return NaN;
+    return type === "lbgal" ? value : value * WATER_LB_PER_GAL;
+  }
+  function densityWarning(value, type){
+    if (!Number.isFinite(value) || value <= 0) return "";
+    if (type === "sg" && value > 1.5) return '<div class="warning">⚠️ Specific gravity is above 1.5. Confirm density entry.</div>';
+    if (type === "sg" && value < 1.0) return '<div class="warning">⚠️ Specific gravity is below 1.0. Confirm density entry.</div>';
+    if (type === "lbgal" && value < 8.0) return '<div class="warning">⚠️ Density is below 8.0 lb/gal. Confirm density entry.</div>';
+    if (type === "lbgal" && value > 12.5) return '<div class="warning">⚠️ Density is above 12.5 lb/gal. Confirm density entry.</div>';
+    return "";
+  }
+  function updateDensityLabels(){
+    if ($("densityLabel")) $("densityLabel").innerText = $("densityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
+    if ($("slugDensityLabel")) $("slugDensityLabel").innerText = $("slugDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
+    if ($("inhibDensityLabel")) $("inhibDensityLabel").innerText = $("inhibDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
+    if ($("biocideDensityLabel")) $("biocideDensityLabel").innerText = $("biocideDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
+  }
+
+  function calcFeed(){
+    const dose = toNumber($("dose").value);
+    const flowInput = toNumber($("flow").value);
+    const densityInput = toNumber($("density").value);
+    const densityType = $("densityType").value;
+    const lbPerGal = densityToLbGal(densityInput, densityType);
+    const densityCaution = densityWarning(densityInput, densityType);
+    const pumpInput = toNumber($("pumpCapacity").value);
+    const pumpType = $("pumpType").value;
+
+    if (!dose || !flowInput || !lbPerGal){
+      $("feedResult").innerHTML = '<div class="warning">Enter target dose, system flow, and density.</div>';
+      return;
+    }
+
+    const gpm = isMetric ? flowInput / GPM_TO_M3HR : flowInput;
+    const lbDay = dose * gpm * 1440 * WATER_LB_PER_GAL / 1000000;
+    const galDay = lbDay / lbPerGal;
+    const galHr = galDay / 24;
+    const displayDailyVol = isMetric ? galDay * GAL_TO_L : galDay;
+    const displayHourlyVol = isMetric ? galHr * GAL_TO_L : galHr;
+    const displayMass = isMetric ? lbDay * LB_TO_KG : lbDay;
+    const dailyUnit = isMetric ? "L/day" : "gal/day";
+    const hourlyUnit = isMetric ? "L/hr" : "gph";
+    const massUnit = isMetric ? "kg/day" : "lb/day";
+    let pumpGuidance = "";
+    let warning = "";
+
+    if (Number.isFinite(pumpInput) && pumpInput > 0){
+      const pumpCapacityGph = isMetric ? pumpInput / GAL_TO_L : pumpInput;
+      const requiredPercent = (galHr / pumpCapacityGph) * 100;
+      const runtimeHours = galDay / pumpCapacityGph;
+      const runtimePercent = (runtimeHours / 24) * 100;
+      const balancedSetting = Math.sqrt(requiredPercent / 100) * 100;
+      if (pumpType === "continuous") pumpGuidance = '<div class="guidance"><strong>Continuous Pump Setting</strong><div>Set pump to ' + fmt(displayHourlyVol, 3) + ' ' + hourlyUnit + '</div><div>~' + fmt(requiredPercent, 1) + '% of pump capacity.</div></div>';
+      if (pumpType === "timer") pumpGuidance = '<div class="guidance"><strong>Timer-Based Pump Setting</strong><div>Run pump ' + fmt(runtimeHours, 2) + ' hrs/day</div><div>~' + fmt(runtimePercent, 1) + '% runtime.</div></div>';
+      if (pumpType === "speed") pumpGuidance = '<div class="guidance"><strong>Pump Speed Setting</strong><div>Estimated speed: ' + fmt(requiredPercent, 1) + '%</div><div>Confirm with drawdown/calibration.</div></div>';
+      if (pumpType === "speedStroke") pumpGuidance = '<div class="guidance"><strong>Speed + Stroke Starting Point</strong><div>Estimated balanced setting: ' + fmt(balancedSetting, 1) + '% speed and ' + fmt(balancedSetting, 1) + '% stroke</div><div>Starting point only. Confirm actual output.</div></div>';
+      if (pumpType === "spm") pumpGuidance = '<div class="guidance"><strong>SPM / Percent Output Setting</strong><div>Estimated output: ' + fmt(requiredPercent, 1) + '% of calibrated pump output</div><div>Confirm with drawdown/calibration.</div></div>';
+      if (requiredPercent > 100 || runtimePercent > 100) warning = '<div class="warning">⚠️ Required feed exceeds pump capacity.</div>';
+    }
+
+    $("feedResult").innerHTML = densityCaution + '<div class="section-title">Calculated Feed Requirement</div><div class="result-main">' + fmt(displayDailyVol, 2) + ' ' + dailyUnit + '</div><div class="result-sub">' + fmt(displayHourlyVol, 3) + ' ' + hourlyUnit + ' continuous equivalent</div><div class="result-sub">' + fmt(displayMass, 2) + ' ' + massUnit + ' product</div><div class="note">This is the calculated daily product requirement. It does not mean all product should be added at once unless the treatment plan calls for slug feeding.</div>' + pumpGuidance + warning;
+  }
+
+  function calcSlug(){
+    const dose = toNumber($("slugPpm").value);
+    const volInput = toNumber($("volume").value);
+    const densityInput = toNumber($("slugDensity").value);
+    const densityType = $("slugDensityType").value;
+    const lbPerGal = densityToLbGal(densityInput, densityType);
+    const densityCaution = densityWarning(densityInput, densityType);
+    if (!dose || !volInput || !lbPerGal){ $("slugResult").innerHTML = '<div class="warning">Enter target dose, system volume, and density.</div>'; return; }
+    const gallons = isMetric ? volInput / GAL_TO_L : volInput;
+    const lb = dose * gallons / 120000;
+    const galProduct = lb / lbPerGal;
+    const displayVol = isMetric ? galProduct * GAL_TO_L : galProduct;
+    const displayMass = isMetric ? lb * LB_TO_KG : lb;
+    const volUnit = isMetric ? "L" : "gal";
+    const massUnit = isMetric ? "kg" : "lb";
+    const smallVol = isMetric ? displayVol * 1000 : displayVol * 128;
+    const smallUnit = isMetric ? "mL" : "fl oz";
+    $("slugResult").innerHTML = densityCaution + '<div class="section-title">Calculated Slug Addition</div><div class="result-main">' + fmt(displayVol, 3) + ' ' + volUnit + '</div><div class="result-sub">' + fmt(smallVol, 1) + ' ' + smallUnit + '</div><div class="result-sub">' + fmt(displayMass, 3) + ' ' + massUnit + ' product</div><div class="note">This is a one-time product addition based on product ppm, system volume, and density.</div>';
+  }
+
+  function calcCycles(){
+    const basis = $("cycleBasis").value;
+    const makeup = toNumber($("makeupCycleValue").value);
+    const tower = toNumber($("towerCycleValue").value);
+    $("makeupCycleLabel").innerText = "Makeup " + basis;
+    $("towerCycleLabel").innerText = "Tower " + basis;
+    if (!makeup || !tower){ $("cyclesResult").innerHTML = '<div class="warning">Enter makeup and tower values using the same units.</div>'; return; }
+    if (tower < makeup){ $("cyclesResult").innerHTML = '<div class="warning">Tower value is lower than makeup value. Confirm samples, units, and basis selection.</div>'; return; }
+    const cycles = tower / makeup;
+    let warning = "";
+    if (cycles < 1.2) warning = '<div class="warning">⚠️ Calculated cycles are very low. Confirm blowdown, makeup source, or sample location.</div>';
+    if (cycles > 10) warning = '<div class="warning">⚠️ Calculated cycles are high. Confirm scaling limits, conductivity control, and chemistry program limits.</div>';
+    if (basis === "Chloride") warning += '<div class="warning">⚠️ Chloride can be misleading where halogens, chloride-based chemistry, or contamination are present.</div>';
+    $("cyclesResult").innerHTML = '<div class="section-title">Calculated Cycles</div><div class="result-main">' + fmt(cycles, 2) + ' cycles</div><div class="result-sub">Basis: ' + basis + '</div><div class="result-sub">Tower ÷ Makeup = ' + fmt(tower, 2) + ' ÷ ' + fmt(makeup, 2) + '</div><div class="note">Cycles are calculated as tower concentration divided by makeup concentration. Use the same units for both values.</div>' + warning;
+  }
+
+  function buildCoolingChart(evapGpm, selectedCycles){
+    const minCycles = 2, maxCycles = 10, width = 360, height = 220, padL = 56, padR = 12, padT = 14, padB = 34;
+    const plotW = width - padL - padR, plotH = height - padT - padB;
+    const points = [];
+    for (let c = minCycles; c <= maxCycles; c += 0.5) points.push({ cycles: c, evap: evapGpm, bleed: evapGpm / (c - 1) });
+    const values = [];
+    points.forEach(p => { if (chartSeries.evap) values.push(p.evap); if (chartSeries.bleed) values.push(p.bleed); });
+    const maxFlow = Math.max.apply(null, values.concat([evapGpm])) * 1.1;
+    function x(c){ return padL + ((c - minCycles) / (maxCycles - minCycles)) * plotW; }
+    function y(flow){ return padT + plotH - (flow / maxFlow) * plotH; }
+    function displayRate(flow){ return isMetric ? flow * GPM_TO_M3HR : flow; }
+    function pathFor(key){ return points.map((p, i) => (i === 0 ? "M" : "L") + x(p.cycles).toFixed(1) + "," + y(p[key]).toFixed(1)).join(" "); }
+    const selectedX = x(Math.max(minCycles, Math.min(maxCycles, selectedCycles)));
+    let lines = "";
+    if (chartSeries.evap) lines += '<path d="' + pathFor("evap") + '" fill="none" stroke="#0284c7" stroke-width="3" stroke-dasharray="6 4" />';
+    if (chartSeries.bleed) lines += '<path d="' + pathFor("bleed") + '" fill="none" stroke="#dc2626" stroke-width="3" />';
+    const rateUnit = isMetric ? "m³/hr" : "gpm";
+    return '<div class="chart-wrap"><div class="section-title">Cycles vs Flow Rate</div><div class="chart-controls"><button type="button" id="toggleBleed" class="' + (chartSeries.bleed ? "active" : "") + '">Bleed</button><button type="button" id="toggleEvap" class="' + (chartSeries.evap ? "active" : "") + '">Evap</button></div><svg viewBox="0 0 ' + width + ' ' + height + '" width="100%"><line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (padT + plotH) + '" stroke="#94a3b8" /><line x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (padL + plotW) + '" y2="' + (padT + plotH) + '" stroke="#94a3b8" /><line x1="' + padL + '" y1="' + y(maxFlow / 2) + '" x2="' + (padL + plotW) + '" y2="' + y(maxFlow / 2) + '" stroke="#e2e8f0" /><text x="8" y="' + (padT + 4) + '" font-size="10" fill="#64748b">' + fmtShort(displayRate(maxFlow)) + '</text><text x="8" y="' + (y(maxFlow / 2) + 4) + '" font-size="10" fill="#64748b">' + fmtShort(displayRate(maxFlow / 2)) + '</text><text x="' + padL + '" y="' + (height - 12) + '" font-size="10" fill="#64748b">2</text><text x="' + (x(6) - 4) + '" y="' + (height - 12) + '" font-size="10" fill="#64748b">6</text><text x="' + (padL + plotW - 12) + '" y="' + (height - 12) + '" font-size="10" fill="#64748b">10</text><text x="' + (width / 2 - 30) + '" y="' + (height - 2) + '" font-size="10" fill="#64748b">Cycles</text><text x="14" y="' + (padT + plotH - 10) + '" font-size="10" fill="#64748b" transform="rotate(-90 14 ' + (padT + plotH - 10) + ')">' + rateUnit + '</text>' + lines + '<line x1="' + selectedX + '" y1="' + padT + '" x2="' + selectedX + '" y2="' + (padT + plotH) + '" stroke="#64748b" stroke-dasharray="4 4" /></svg><div class="chart-label">Lines show how bleed changes as cycles increase. Evaporation stays flat because the entered evaporation rate is held constant.</div></div>';
+  }
+
+  function attachChartToggleHandlers(){
+    [["toggleBleed", "bleed"], ["toggleEvap", "evap"]].forEach(pair => {
+      const el = $(pair[0]);
+      if (el) el.addEventListener("click", () => { chartSeries[pair[1]] = !chartSeries[pair[1]]; calcCooling(); });
+    });
+  }
+
+  function syncCoolingBleedToInhib(){
+    if (!$('useCoolingBleed').checked || !Number.isFinite(latestCoolingBleedGpm)) return;
+    $('bleedRate').value = fmt(isMetric ? latestCoolingBleedGpm * GPM_TO_M3HR : latestCoolingBleedGpm, 3);
+  }
+
+  function calcBiocide(){
+    const dose = toNumber($('biocidePpm').value);
+    const volInput = toNumber($('biocideVolume').value);
+    const densityInput = toNumber($('biocideDensity').value);
+    const densityType = $('biocideDensityType').value;
+    const lbPerGal = densityToLbGal(densityInput, densityType);
+    const densityCaution = densityWarning(densityInput, densityType);
+    if (!dose || !volInput || !lbPerGal){ $('biocideResult').innerHTML = '<div class="warning">Enter target dose, system volume, and density.</div>'; return; }
+    const gallons = isMetric ? volInput / GAL_TO_L : volInput;
+    const lb = dose * gallons / 120000;
+    const galProduct = lb / lbPerGal;
+    const displayVol = isMetric ? galProduct * GAL_TO_L : galProduct;
+    const displayMass = isMetric ? lb * LB_TO_KG : lb;
+    const volUnit = isMetric ? 'L' : 'gal';
+    const massUnit = isMetric ? 'kg' : 'lb';
+    const smallVol = isMetric ? displayVol * 1000 : displayVol * 128;
+    const smallUnit = isMetric ? 'mL' : 'fl oz';
+    $('biocideResult').innerHTML = densityCaution + '<div class="section-title">Calculated Biocide Addition</div><div class="result-main">' + fmt(displayVol, 3) + ' ' + volUnit + '</div><div class="result-sub">' + fmt(smallVol, 1) + ' ' + smallUnit + '</div><div class="result-sub">' + fmt(displayMass, 3) + ' ' + massUnit + ' product</div><div class="note">One-time product addition based on target dose and known system volume.</div>';
+  }
+
+  function calcPumpCal(){
+    const volInput = toNumber($('pumpCalVolume').value);
+    const minutes = toNumber($('pumpCalTime').value);
+    if (!volInput || !minutes){ $('pumpCalResult').innerHTML = '<div class="warning">Enter collected volume and collection time.</div>'; return; }
+    const gph = (volInput / 1000 / GAL_TO_L) / (minutes / 60);
+    latestPumpGph = gph;
+    const lhr = gph * GAL_TO_L;
+    const mainValue = isMetric ? lhr : gph;
+    const mainUnit = isMetric ? 'L/hr' : 'gph';
+    const altValue = isMetric ? gph : lhr;
+    const altUnit = isMetric ? 'gph' : 'L/hr';
+    let warning = '';
+    if (minutes < 1) warning = '<div class="warning">⚠️ Very short collection time. Use a longer drawdown for better accuracy.</div>';
+    if (volInput < 10) warning += '<div class="warning">⚠️ Small collected volume. Measurement error may be significant.</div>';
+    $('pumpCalResult').innerHTML = '<div class="section-title">Calculated Pump Output</div><div class="result-main">' + fmt(mainValue, 3) + ' ' + mainUnit + '</div><div class="result-sub">' + fmt(altValue, 3) + ' ' + altUnit + '</div><div class="result-sub">' + fmt(isMetric ? volInput : volInput / 29.5735, 1) + ' ' + (isMetric ? 'mL' : 'fl oz') + ' collected in ' + fmt(minutes, 2) + ' min</div><div class="note">Use this calibrated output as pump capacity in the feed rate tools.</div>' + warning;
+  }
+
+  function calcInhib(){
+    syncCoolingBleedToInhib();
+    const bleedInput = toNumber($('bleedRate').value);
+    const dose = toNumber($('inhibPpm').value);
+    const densityInput = toNumber($('inhibDensity').value);
+    const densityType = $('inhibDensityType').value;
+    const lbPerGal = densityToLbGal(densityInput, densityType);
+    const densityCaution = densityWarning(densityInput, densityType);
+    if (!bleedInput || !dose){ $('inhibResult').innerHTML = '<div class="warning">Enter bleed rate and product dose.</div>'; return; }
+    const bleedGpm = isMetric ? bleedInput / GPM_TO_M3HR : bleedInput;
+    const lbDay = dose * bleedGpm * 1440 * WATER_LB_PER_GAL / 1000000;
+    const galDay = lbPerGal ? lbDay / lbPerGal : NaN;
+    $('inhibResult').innerHTML = densityCaution + '<div class="section-title">Inhibitor Requirement</div><div class="result-main">' + fmt(isMetric ? lbDay * LB_TO_KG : lbDay, 2) + ' ' + (isMetric ? 'kg/day' : 'lb/day') + '</div><div class="result-sub">' + (Number.isFinite(galDay) ? fmt(isMetric ? galDay * GAL_TO_L : galDay, 2) + ' ' + (isMetric ? 'L/day' : 'gal/day') : '—') + '</div><div class="note">Calculated from bleed × ppm. Represents product required to offset blowdown losses.</div>';
+  }
+
+  function suggestLoadBySeason(){
+    const month = new Date().getMonth() + 1;
+    let pct = 70, label = 'shoulder season';
+    if ([6,7,8].includes(month)) { pct = 90; label = 'summer'; }
+    else if ([12,1,2].includes(month)) { pct = 40; label = 'winter'; }
+    else if ([3,4,5].includes(month)) { pct = 65; label = 'spring'; }
+    else if ([9,10,11].includes(month)) { pct = 60; label = 'fall'; }
+    $('loadPercent').value = pct;
+    $('loadSuggestNote').innerText = 'Suggested ' + pct + '% for ' + label + '. Adjust if actual load is known.';
+    calcCooling();
+  }
+
+  function calcCooling(){
+    const evapMethod = $('evapMethod').value;
+    const cycles = toNumber($('cycles').value);
+    $('anyTowerInputs').style.display = evapMethod === 'anyTower' ? 'block' : 'none';
+    $('chillerInputs').style.display = evapMethod === 'anyTower' ? 'none' : 'block';
+    $('loadPercentField').style.display = evapMethod === 'centrifugal' ? 'block' : 'none';
+    if (!cycles){ $('coolingResult').innerHTML = '<div class="warning">Enter cycles of concentration.</div>'; return; }
+    if (cycles <= 1){ $('coolingResult').innerHTML = '<div class="warning">Cycles must be greater than 1 to calculate bleed.</div>'; return; }
+    let evapGpm = NaN, methodNote = '';
+    if (evapMethod === 'anyTower'){
+      const recircInput = toNumber($('recircFlow').value);
+      const deltaT = toNumber($('deltaT').value);
+      if (!recircInput || !deltaT){ $('coolingResult').innerHTML = '<div class="warning">Enter recirculation flow and temperature drop.</div>'; return; }
+      evapGpm = (isMetric ? recircInput / GPM_TO_M3HR : recircInput) * deltaT * 0.001;
+      methodNote = 'Evaporation estimated using recirculation flow × ΔT × 0.001.';
+    }
+    if (evapMethod === 'centrifugal'){
+      const tons = toNumber($('chillerTons').value);
+      const loadPct = toNumber($('loadPercent').value) || 100;
+      if (!tons){ $('coolingResult').innerHTML = '<div class="warning">Enter chiller load in tons.</div>'; return; }
+      const effectiveTons = tons * (loadPct / 100);
+      evapGpm = effectiveTons * 0.03;
+      methodNote = 'Evaporation estimated using ' + fmt(effectiveTons, 1) + ' effective tons (load-adjusted) × 0.03 gpm/ton.';
+    }
+    if (evapMethod === 'absorption'){
+      const tons = toNumber($('chillerTons').value);
+      if (!tons){ $('coolingResult').innerHTML = '<div class="warning">Enter chiller load in tons.</div>'; return; }
+      evapGpm = tons * 0.04;
+      methodNote = 'Evaporation estimated for towers serving absorption chillers using tons × 0.04 gpm/ton.';
+    }
+    const bleedGpm = evapGpm / (cycles - 1);
+    latestCoolingBleedGpm = bleedGpm;
+    syncCoolingBleedToInhib();
+    const makeupGpm = evapGpm + bleedGpm;
+    const displayEvap = isMetric ? evapGpm * GPM_TO_M3HR : evapGpm;
+    const displayBleed = isMetric ? bleedGpm * GPM_TO_M3HR : bleedGpm;
+    const displayMakeup = isMetric ? makeupGpm * GPM_TO_M3HR : makeupGpm;
+    const rateUnit = isMetric ? 'm³/hr' : 'gpm';
+    const bleedDaily = isMetric ? bleedGpm * 1440 * GAL_TO_L / 1000 : bleedGpm * 1440;
+    const makeupDaily = isMetric ? makeupGpm * 1440 * GAL_TO_L / 1000 : makeupGpm * 1440;
+    const dailyUnit = isMetric ? 'm³/day' : 'gal/day';
+    $('coolingResult').innerHTML = '<div class="section-title">Calculated Cooling Balance</div><div class="result-main">' + fmt(displayBleed, 2) + ' ' + rateUnit + ' bleed</div><div class="result-sub">' + fmt(displayEvap, 2) + ' ' + rateUnit + ' evaporation</div><div class="result-sub">' + fmt(displayMakeup, 2) + ' ' + rateUnit + ' makeup</div><div class="result-sub">' + fmtComma(bleedDaily) + ' ' + dailyUnit + ' bleed</div><div class="result-sub">' + fmtComma(makeupDaily) + ' ' + dailyUnit + ' makeup</div><div class="note">' + methodNote + ' Assumes steady-state (makeup = evap + bleed).</div>' + buildCoolingChart(evapGpm, cycles);
+    attachChartToggleHandlers();
+  }
+
+  function setUnits(metric){
+    isMetric = metric;
+    $('btnImp').classList.toggle('active', !metric);
+    $('btnMet').classList.toggle('active', metric);
+    $('feedDoseLabel').innerText = metric ? 'Target Product Dose (mg/L)' : 'Target Product Dose (ppm)';
+    $('slugDoseLabel').innerText = metric ? 'Target Product Dose (mg/L)' : 'Target Product Dose (ppm)';
+    $('inhibDoseLabel').innerText = metric ? 'Target Product Dose (mg/L)' : 'Target Product Dose (ppm)';
+    $('biocideDoseLabel').innerText = metric ? 'Target Product Dose (mg/L)' : 'Target Product Dose (ppm)';
+    $('flowLabel').innerText = metric ? 'System Flow (m³/hr)' : 'System Flow (gpm)';
+    $('volLabel').innerText = metric ? 'System Volume (L)' : 'System Volume (gal)';
+    $('biocideVolumeLabel').innerText = metric ? 'System Volume (L)' : 'System Volume (gal)';
+    $('bleedLabel').innerText = metric ? 'Bleed Rate (m³/hr)' : 'Bleed Rate (gpm)';
+    $('pumpCapacityLabel').innerText = metric ? 'Pump Capacity (L/hr)' : 'Pump Capacity (gph)';
+    $('recircLabel').innerText = metric ? 'Tower Recirculation Flow (m³/hr)' : 'Tower Recirculation Flow (gpm)';
+    calcFeed(); calcSlug(); calcCooling(); calcCycles(); calcInhib(); calcBiocide(); calcPumpCal();
+  }
+
+  function showSection(section){
+    sections.forEach(item => {
+      const sectionEl = $(item.sectionId);
+      const buttonEl = $(item.buttonId);
+      if (sectionEl) sectionEl.style.display = section === item.key ? 'block' : 'none';
+      if (buttonEl) buttonEl.classList.toggle('active', section === item.key);
+    });
+  }
+
+   function runSelfTests(){
+    const nearly = (actual, expected, tolerance) => Math.abs(actual - expected) <= tolerance;
+    console.assert(nearly(densityToLbGal(1.11, 'sg'), 9.2574, 0.01), 'SG density conversion failed');
+    console.assert(nearly(densityToLbGal(9.26, 'lbgal'), 9.26, 0.01), 'lb/gal density conversion failed');
+    console.assert(densityWarning(1.6, 'sg').includes('above 1.5'), 'High SG warning failed');
+    console.assert(densityWarning(0.9, 'sg').includes('below 1.0'), 'Low SG warning failed');
+    console.assert(densityWarning(7.9, 'lbgal').includes('below 8.0'), 'Low lb/gal warning failed');
+    console.assert(densityWarning(12.6, 'lbgal').includes('above 12.5'), 'High lb/gal warning failed');
+    console.assert(nearly((100 * 100 * 1440 * 8.34 / 1000000), 120.096, 0.01), 'Feed lb/day sanity test failed');
+    console.assert(nearly((100 * 1000 / 120000), 0.8333, 0.01), 'Slug/biocide lb sanity test failed');
+  }
+
+  function bind(){
+    $('btnImp').addEventListener('click', () => setUnits(false));
+    $('btnMet').addEventListener('click', () => setUnits(true));
+
+    sections.forEach(item => {
+      const buttonEl = $(item.buttonId);
+      if (buttonEl) buttonEl.addEventListener('click', () => showSection(item.key));
+    });
+
+    ['dose','flow','density','densityType','pumpCapacity','pumpType'].forEach(id => $(id).addEventListener('input', () => { updateDensityLabels(); calcFeed(); }));
+    ['dose','flow','density','densityType','pumpCapacity','pumpType'].forEach(id => $(id).addEventListener('change', () => { updateDensityLabels(); calcFeed(); }));
+
+    ['slugPpm','volume','slugDensity','slugDensityType'].forEach(id => $(id).addEventListener('input', () => { updateDensityLabels(); calcSlug(); }));
+    ['slugPpm','volume','slugDensity','slugDensityType'].forEach(id => $(id).addEventListener('change', () => { updateDensityLabels(); calcSlug(); }));
+
+    ['cycleBasis','makeupCycleValue','towerCycleValue'].forEach(id => $(id).addEventListener('input', calcCycles));
+    ['cycleBasis','makeupCycleValue','towerCycleValue'].forEach(id => $(id).addEventListener('change', calcCycles));
+
+    ['evapMethod','recircFlow','deltaT','chillerTons','loadPercent','cycles'].forEach(id => $(id).addEventListener('input', calcCooling));
+    ['evapMethod','recircFlow','deltaT','chillerTons','loadPercent','cycles'].forEach(id => $(id).addEventListener('change', calcCooling));
+
+    ['bleedRate','inhibPpm','inhibDensity','inhibDensityType'].forEach(id => $(id).addEventListener('input', () => { updateDensityLabels(); calcInhib(); }));
+    ['bleedRate','inhibPpm','inhibDensity','inhibDensityType'].forEach(id => $(id).addEventListener('change', () => { updateDensityLabels(); calcInhib(); }));
+
+    ['biocidePpm','biocideVolume','biocideDensity','biocideDensityType'].forEach(id => $(id).addEventListener('input', () => { updateDensityLabels(); calcBiocide(); }));
+    ['biocidePpm','biocideVolume','biocideDensity','biocideDensityType'].forEach(id => $(id).addEventListener('change', () => { updateDensityLabels(); calcBiocide(); }));
+
+    ['pumpCalVolume','pumpCalTime'].forEach(id => $(id).addEventListener('input', calcPumpCal));
+    ['pumpCalVolume','pumpCalTime'].forEach(id => $(id).addEventListener('change', calcPumpCal));
+
+    $('useCoolingBleed').addEventListener('change', () => { syncCoolingBleedToInhib(); calcInhib(); });
+    $('suggestLoadBtn').addEventListener('click', suggestLoadBySeason);
+
+    $('usePumpCalBtn').addEventListener('click', () => {
+      if (!Number.isFinite(latestPumpGph)) return;
+      $('pumpCapacity').value = fmt(isMetric ? latestPumpGph * GAL_TO_L : latestPumpGph, 3);
+      showSection('feed');
+      calcFeed();
+    });
+  }
+
+  bind();
+  runSelfTests();
+  updateDensityLabels();
+  setUnits(false);
+  showSection('feed');
+})();
+</script>
+</body>
+</html>
