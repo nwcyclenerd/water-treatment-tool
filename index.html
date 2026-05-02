@@ -194,6 +194,13 @@
             <div class="helper">Enter chiller load (tons).</div>
             <input id="chillerTons" value="500" inputmode="decimal" />
           </div>
+          <div class="field" id="loadPercentField">
+            <label for="loadPercent">Percent Load (%)</label>
+            <div class="helper">Adjust for actual operating load (default 100%).</div>
+            <input id="loadPercent" value="100" inputmode="decimal" />
+            <button id="suggestLoadBtn" type="button" style="margin-top:8px; padding:8px 10px; border-radius:10px; border:none; background:#e2e8f0; font-weight:bold; cursor:pointer;">Suggest by Season</button>
+            <div id="loadSuggestNote" class="helper"></div>
+          </div>
         </div>
         <div class="field">
           <label for="cycles">Cycles of Concentration</label>
@@ -207,6 +214,13 @@
     <div id="inhibSection" style="display:none;">
       <div class="card">
         <div class="section-title">Inhibitor Feed Inputs</div>
+        <div class="field">
+          <label>
+            <input id="useCoolingBleed" type="checkbox" style="width:auto; margin-right:6px;" />
+            Use bleed from Cooling Balance
+          </label>
+          <div class="helper">Optional. Pulls the latest calculated bleed rate from Cooling Balance.</div>
+        </div>
         <div class="field">
           <label id="bleedLabel" for="bleedRate">Bleed Rate (gpm)</label>
           <div class="helper">Use tower blowdown rate.</div>
@@ -242,6 +256,7 @@ const LB_TO_KG = 0.45359237;
 
 let isMetric = false;
 let chartSeries = { evap: true, bleed: true };
+let latestCoolingBleedGpm = null;
 
 const $ = (id) => document.getElementById(id);
 function toNumber(v){
@@ -256,6 +271,10 @@ function fmtShort(v, d = 1){
   if (abs >= 1000000) return (v / 1000000).toFixed(d).replace(/\.0$/, "") + "M";
   if (abs >= 1000) return (v / 1000).toFixed(d).replace(/\.0$/, "") + "K";
   return v.toFixed(0);
+}
+function fmtComma(v, d=0){
+  if (!Number.isFinite(v)) return "—";
+  return Number(v.toFixed(d)).toLocaleString();
 }
 function densityToLbGal(value, type){
   if (!Number.isFinite(value) || value <= 0) return NaN;
@@ -529,7 +548,15 @@ function attachChartToggleHandlers(){
   });
 }
 
+function syncCoolingBleedToInhib(){
+  const useCooling = $("useCoolingBleed") && $("useCoolingBleed").checked;
+  if (!useCooling || !Number.isFinite(latestCoolingBleedGpm)) return;
+  const displayBleed = isMetric ? latestCoolingBleedGpm * GPM_TO_M3HR : latestCoolingBleedGpm;
+  $("bleedRate").value = fmt(displayBleed, 3);
+}
+
 function calcInhib(){
+  syncCoolingBleedToInhib();
   const bleedInput = toNumber($("bleedRate").value);
   const dose = toNumber($("inhibPpm").value);
   const densityInput = toNumber($("inhibDensity").value);
@@ -560,12 +587,30 @@ function calcInhib(){
   `;
 }
 
+function suggestLoadBySeason(){
+  const month = new Date().getMonth() + 1;
+  let pct = 70;
+  let label = "shoulder season";
+
+  if ([6,7,8].includes(month)) { pct = 90; label = "summer"; }
+  else if ([12,1,2].includes(month)) { pct = 40; label = "winter"; }
+  else if ([3,4,5].includes(month)) { pct = 65; label = "spring"; }
+  else if ([9,10,11].includes(month)) { pct = 60; label = "fall"; }
+
+  $("loadPercent").value = pct;
+  $("loadSuggestNote").innerText = `Suggested ${pct}% for ${label}. Adjust if actual load is known.`;
+  calcCooling();
+}
+
 function calcCooling(){
   const evapMethod = $("evapMethod").value;
   const cycles = toNumber($("cycles").value);
 
   $("anyTowerInputs").style.display = evapMethod === "anyTower" ? "block" : "none";
   $("chillerInputs").style.display = evapMethod === "anyTower" ? "none" : "block";
+  if ($("loadPercentField")) {
+    $("loadPercentField").style.display = evapMethod === "centrifugal" ? "block" : "none";
+  }
 
   if (!cycles){
     $("coolingResult").innerHTML = `<div class="warning">Enter cycles of concentration.</div>`;
@@ -593,12 +638,14 @@ function calcCooling(){
 
   if (evapMethod === "centrifugal"){
     const tons = toNumber($("chillerTons").value);
+    const loadPct = toNumber($("loadPercent").value) || 100;
     if (!tons){
       $("coolingResult").innerHTML = `<div class="warning">Enter chiller load in tons.</div>`;
       return;
     }
-    evapGpm = tons * 0.03;
-    methodNote = "Evaporation estimated for towers serving centrifugal chillers using tons × 0.03 gpm/ton.";
+    const effectiveTons = tons * (loadPct / 100);
+    evapGpm = effectiveTons * 0.03;
+    methodNote = `Evaporation estimated using ${fmt(effectiveTons,1)} effective tons (load-adjusted) × 0.03 gpm/ton.`;
   }
 
   if (evapMethod === "absorption"){
@@ -612,6 +659,8 @@ function calcCooling(){
   }
 
   const bleedGpm = evapGpm / (cycles - 1);
+  latestCoolingBleedGpm = bleedGpm;
+  syncCoolingBleedToInhib();
   const makeupGpm = evapGpm + bleedGpm;
 
   const displayEvap = isMetric ? evapGpm * GPM_TO_M3HR : evapGpm;
@@ -628,8 +677,8 @@ function calcCooling(){
     <div class="result-main">${fmt(displayBleed, 2)} ${rateUnit} bleed</div>
     <div class="result-sub">${fmt(displayEvap, 2)} ${rateUnit} evaporation</div>
     <div class="result-sub">${fmt(displayMakeup, 2)} ${rateUnit} makeup</div>
-    <div class="result-sub">${fmtShort(bleedDaily)} ${dailyUnit} bleed</div>
-    <div class="result-sub">${fmtShort(makeupDaily)} ${dailyUnit} makeup</div>
+    <div class="result-sub">${fmtComma(bleedDaily)} ${dailyUnit} bleed</div>
+    <div class="result-sub">${fmtComma(makeupDaily)} ${dailyUnit} makeup</div>
     <div class="note">${methodNote} Assumes steady-state (makeup = evap + bleed).</div>
     ${buildCoolingChart(evapGpm, cycles)}
   `;
@@ -666,9 +715,11 @@ $("btnInhib").addEventListener("click", () => showSection("inhib"));
 ["slugPpm", "volume", "slugDensity", "slugDensityType"].forEach(id => $(id).addEventListener("change", () => { updateDensityLabels(); calcSlug(); }));
 ["cycleBasis", "makeupCycleValue", "towerCycleValue"].forEach(id => $(id).addEventListener("input", calcCycles));
 ["cycleBasis", "makeupCycleValue", "towerCycleValue"].forEach(id => $(id).addEventListener("change", calcCycles));
-["evapMethod", "recircFlow", "deltaT", "chillerTons", "cycles"].forEach(id => $(id).addEventListener("input", calcCooling));
+["evapMethod", "recircFlow", "deltaT", "chillerTons", "loadPercent", "cycles"].forEach(id => $(id).addEventListener("input", calcCooling));
 ["bleedRate","inhibPpm","inhibDensity","inhibDensityType"].forEach(id => $(id).addEventListener("input", () => { updateDensityLabels(); calcInhib(); }));
 ["bleedRate","inhibPpm","inhibDensity","inhibDensityType"].forEach(id => $(id).addEventListener("change", () => { updateDensityLabels(); calcInhib(); }));
+$("useCoolingBleed").addEventListener("change", () => { syncCoolingBleedToInhib(); calcInhib(); });
+$("suggestLoadBtn").addEventListener("click", suggestLoadBySeason);
 ["evapMethod", "recircFlow", "deltaT", "chillerTons", "cycles"].forEach(id => $(id).addEventListener("change", calcCooling));
 
 updateDensityLabels();
