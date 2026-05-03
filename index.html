@@ -23,65 +23,22 @@
     </div>
 
     <div class="nav">
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Future structure: this row will become CATEGORY (Cooling | Boilers | Wastewater) -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
-      <!-- Cooling Calculators -->
+    <div class="nav-group">
+      <div class="nav-title">Feed / Dose Tools</div>
       <button id="btnFeed" type="button" class="active">Feed Rate</button>
       <button id="btnSlug" type="button">Slug Dose</button>
-      <button id="btnCycles" type="button">Cycles</button>
-      <button id="btnCooling" type="button">Cooling Balance</button>
       <button id="btnInhib" type="button">Inhibitor Feed</button>
       <button id="btnBiocide" type="button">Biocide</button>
       <button id="btnPumpCal" type="button">Pump Cal</button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-title">System Details</div>
+      <button id="btnCooling" type="button">Cooling Balance</button>
+      <button id="btnCycles" type="button">Cycles</button>
       <button id="btnLSI" type="button">LSI</button>
     </div>
+  </div>
 
     <div id="feedSection">
       <div class="card">
@@ -176,8 +133,9 @@
         <div class="field">
           <label for="lsiInputMode">LSI Input Mode</label>
           <div class="helper">
-            Direct Tower Water Inputs = actual recirculating tower water test results. Estimate from Makeup + Cycles = makeup water values multiplied by cycles to estimate tower water chemistry.
-          </div>
+            DIRECT = Enter actual tower water test results (pH, TDS, calcium, alkalinity).
+            ESTIMATE = Use makeup water values × cycles from the Cooling Balance screen.
+          </div>  
           <select id="lsiInputMode">
             <option value="direct">Direct Tower Water Inputs</option>
             <option value="estimated">Estimate from Makeup + Cycles</option>
@@ -195,19 +153,20 @@
         </div>
 
         <div class="field">
-          <label for="lsiTds">TDS (mg/L)</label>
+          <label id="lsiTdsLabel" for="lsiTds">TDS (mg/L)</label>
           <input id="lsiTds" value="1000" inputmode="decimal" />
         </div>
 
         <div class="field">
-          <label for="lsiCalcium">Calcium Hardness (mg/L as CaCO₃)</label>
+          <label id="lsiCalciumLabel" for="lsiCalcium">Calcium Hardness (mg/L as CaCO₃)</label>
           <input id="lsiCalcium" value="300" inputmode="decimal" />
         </div>
 
         <div class="field">
-          <label for="lsiAlkalinity">Total Alkalinity (mg/L as CaCO₃)</label>
+          <label id="lsiAlkLabel" for="lsiAlkalinity">Total Alkalinity (mg/L as CaCO₃)</label>
           <input id="lsiAlkalinity" value="150" inputmode="decimal" />
         </div>
+
         <div class="field">
           <label for="lsiPHeq">Equilibrium pH for PSI</label>
           <div class="helper">Optional. If unknown, leave blank; PSI will not be calculated.</div>

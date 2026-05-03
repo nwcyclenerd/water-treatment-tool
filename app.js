@@ -361,56 +361,82 @@ function convertUnitFields(previousMetric, newMetric){
     '</div>';
   }
 
-  return '<div class="guidance">' +
-    '<strong>How to Use (Direct Mode)</strong>' +
-    '<div>Enter actual tower water test results.</div>' +
-    '<div>Do NOT use makeup water values in this mode.</div>' +
-  '</div>';
-}
+    return '<div class="guidance">' +
+        '<strong>How to Use (Direct Mode)</strong>' +
+        '<div>Enter actual tower water test results.</div>' +
+        '<div>Do NOT use makeup water values in this mode.</div>' +
+    '</div>';
+ }
 
-  function interpretPSI(psi){
-    if (psi < 4.5) return "Heavy scaling tendency.";
-    if (psi < 6.0) return "Scaling tendency.";
-    if (psi <= 7.0) return "Near balanced.";
-    return "Corrosive / undersaturated tendency.";
+  function updateLSIModeUI(){
+  const mode = $('lsiInputMode') ? $('lsiInputMode').value : 'direct';
+
+    if (mode === 'estimated'){
+        if ($('lsiTdsLabel')) $('lsiTdsLabel').innerText = 'Makeup TDS (mg/L)';
+        if ($('lsiCalciumLabel')) $('lsiCalciumLabel').innerText = 'Makeup Calcium (mg/L as CaCO₃)';
+        if ($('lsiAlkLabel')) $('lsiAlkLabel').innerText = 'Makeup Alkalinity (mg/L as CaCO₃)';
+    } else {
+        if ($('lsiTdsLabel')) $('lsiTdsLabel').innerText = 'TDS (mg/L)';
+        if ($('lsiCalciumLabel')) $('lsiCalciumLabel').innerText = 'Calcium Hardness (mg/L as CaCO₃)';
+        if ($('lsiAlkLabel')) $('lsiAlkLabel').innerText = 'Total Alkalinity (mg/L as CaCO₃)';
+    }
   }
 
-  function indexClass(value, type){
-  if (!Number.isFinite(value)) return "";
+    function interpretPSI(psi){
+        if (psi < 4.5) return "Heavy scaling tendency.";
+        if (psi < 6.0) return "Scaling tendency.";
+        if (psi <= 7.0) return "Near balanced.";
+        return "Corrosive / undersaturated tendency.";
+    }
 
-  if (type === "lsi"){
-    if (value > 0.5) return "bad";
-    if (value < -0.5) return "caution";
-    if (value > 0.1 || value < -0.1) return "watch";
-    return "good";
-  }
+    function indexClass(value, type){
+    if (!Number.isFinite(value)) return "";
 
-  if (type === "rsi" || type === "psi"){
-    if (value < 5.5) return "bad";
-    if (value < 6.2) return "watch";
-    if (value <= 6.8) return "good";
-    if (value <= 8.5) return "watch";
-    return "caution";
-  }
+    if (type === "lsi"){
+        if (value > 0.5) return "bad";
+        if (value < -0.5) return "caution";
+        if (value > 0.1 || value < -0.1) return "watch";
+        return "good";
+    }
 
-  return "";
-  }
+    if (type === "rsi" || type === "psi"){
+        if (value < 5.5) return "bad";
+        if (value < 6.2) return "watch";
+        if (value <= 6.8) return "good";
+        if (value <= 8.5) return "watch";
+        return "caution";
+    }
 
-function resultPill(label, value, type){
-  return '<div class="index-pill ' + indexClass(value, type) + '">' +
-    '<div class="index-label">' + label + '</div>' +
-    '<div class="index-value">' + fmt(value, 2) + '</div>' +
-  '</div>';
-}
+    return "";
+    }
+
+    function resultPill(label, value, type){
+    return '<div class="index-pill ' + indexClass(value, type) + '">' +
+        '<div class="index-label">' + label + '</div>' +
+        '<div class="index-value">' + fmt(value, 2) + '</div>' +
+    '</div>';
+    }
 
   function calcLSI(){
     const pH = toNumber($('lsiPh').value);
     const tempInput = toNumber($('lsiTemp').value);
-    const tds = toNumber($('lsiTds').value);
-    const calcium = toNumber($('lsiCalcium').value);
-    const alkalinity = toNumber($('lsiAlkalinity').value);
-    const pHeq = toNumber($('lsiPHeq') ? $('lsiPHeq').value : "");
+    let tds = toNumber($('lsiTds').value);
+    let calcium = toNumber($('lsiCalcium').value);
+    let alkalinity = toNumber($('lsiAlkalinity').value);
+
     const inputMode = $('lsiInputMode') ? $('lsiInputMode').value : 'direct';
+
+    if (inputMode === 'estimated'){
+    const cyclesVal = toNumber($('cycles').value);
+
+        if (Number.isFinite(cyclesVal) && cyclesVal > 1){
+            tds = tds * cyclesVal;
+            calcium = calcium * cyclesVal;
+            alkalinity = alkalinity * cyclesVal;
+        }
+    }
+    const pHeq = toNumber($('lsiPHeq') ? $('lsiPHeq').value : "");
+    
 
     if (!Number.isFinite(pH) || !Number.isFinite(tempInput) || !Number.isFinite(tds) || !Number.isFinite(calcium) || !Number.isFinite(alkalinity)){
         $('lsiResult').innerHTML = '<div class="warning">Enter pH, temperature, TDS, calcium hardness, and total alkalinity.</div>';
@@ -431,6 +457,12 @@ function resultPill(label, value, type){
         '<div class="result-sub">RSI: ' + fmt(rsi, 2) + '</div>' +
         (Number.isFinite(psi) ? '<div class="result-sub">PSI: ' + fmt(psi, 2) + '</div>' : '') +
         '<div class="result-sub">Calculated saturation pH: ' + fmt(pHs, 2) + '</div>' +
+        (inputMode === 'estimated'
+        ? '<div class="result-sub">Estimated Tower TDS: ' + fmt(tds, 0) + '</div>' +
+            '<div class="result-sub">Estimated Tower Calcium: ' + fmt(calcium, 0) + '</div>' +
+            '<div class="result-sub">Estimated Tower Alkalinity: ' + fmt(alkalinity, 0) + '</div>'
+        : ''
+        ) +
 
         '<div class="result-sub">LSI: ' + interpretLSI(lsi) + '</div>' +
         '<div class="result-sub">RSI: ' + interpretRSI(rsi) + '</div>' +
@@ -603,6 +635,11 @@ function resultPill(label, value, type){
 
     ['lsiInputMode','lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('input', calcLSI));
     ['lsiInputMode','lsiPh','lsiTemp','lsiTds','lsiCalcium','lsiAlkalinity','lsiPHeq'].forEach(id => $(id).addEventListener('change', calcLSI));
+    if ($('lsiInputMode')){
+        $('lsiInputMode').addEventListener('change', () => {
+            updateLSIModeUI();
+        });
+    }
     if ($('clearLsiBtn')) $('clearLsiBtn').addEventListener('click', clearLSI);
 
     if ($('useCoolingCyclesBtn')) {
@@ -610,9 +647,10 @@ function resultPill(label, value, type){
             useCoolingCyclesContext = true;
 
             if ($('lsiInputMode')) {
-                $('lsiInputMode').value = 'estimated';
+            $('lsiInputMode').value = 'estimated';
             }
 
+            updateLSIModeUI();
             calcLSI();
         });
     }
@@ -631,6 +669,7 @@ function resultPill(label, value, type){
   bind();
   runSelfTests();
   updateDensityLabels();
+  updateLSIModeUI();
   setUnits(false);
   showSection('feed');
 })();
