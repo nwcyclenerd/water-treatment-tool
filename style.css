@@ -48,6 +48,128 @@ body::before {
   z-index: -1;
 }
 
+.container {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.header {
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #111827;
+  color: white;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #d1d5db;
+  line-height: 1.35;
+}
+
+.uom {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.uom button {
+  flex: 1 1 45%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #e2e8f0;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.card {
+  border: 1px solid #d9dee7;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+  color: #111827;
+}
+
+.helper {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+
+.result-main {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.result-sub {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.note {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.guidance {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #1e1b4b;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.warning {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1px solid #fbbf24;
+  color: #92400e;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
     .index-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -93,11 +215,6 @@ body::before {
     .index-pill.bad {
     background: #fee2e2;
     border-color: #fca5a5;
-    }
-
-    /* Darker page background only */
-    body {
-    background: #0f172a;
     }
 
     /* Keep calculator cards light */
