@@ -1,15 +1,18 @@
 (function(){
   "use strict";
 
-  const WATER_LB_PER_GAL = 8.34;
-  const GPM_TO_M3HR = 0.2271247;
-  const GAL_TO_L = 3.78541;
-  const LB_TO_KG = 0.45359237;
+  // === CONVERSION CONSTANTS ===
+  // Used throughout calculations for unit conversions between imperial and metric systems
+  const WATER_LB_PER_GAL = 8.34; // Mass of water per gallon (base for ppm calculations)
+  const GPM_TO_M3HR = 0.2271247; // Flow conversion: gallons per minute to cubic meters per hour
+  const GAL_TO_L = 3.78541; // Volume conversion: gallons to liters
+  const LB_TO_KG = 0.45359237; // Mass conversion: pounds to kilograms
 
-  let isMetric = false;
-  let chartSeries = { evap: true, bleed: true };
-  let latestCoolingBleedGpm = NaN;
-  let latestPumpGph = NaN;
+  // === STATE VARIABLES ===
+  let isMetric = false; // Toggle between imperial (false) and metric (true) units
+  let chartSeries = { evap: true, bleed: true }; // Chart visibility toggles for cooling balance visualization
+  let latestCoolingBleedGpm = NaN; // Cached bleed rate from cooling calcs; used by inhibitor feed section
+  let latestPumpGph = NaN; // Cached pump calibration output; can be imported to pump capacity field
   let useCoolingCyclesContext = false;
 
   const sections = [
@@ -23,13 +26,20 @@
     { key: "lsi", sectionId: "lsiSection", buttonId: "btnLSI" },
   ];
 
-  function $(id){ return document.getElementById(id); }
+  // === UTILITY FUNCTIONS ===
+  function $(id){ return document.getElementById(id); } // DOM shortcut
+  
+  // Convert input to number, handling empty strings, commas, and invalid values
   function toNumber(v){
     if (v === null || v === undefined || String(v).trim() === "") return NaN;
-    const n = Number(String(v).replace(/,/g, ""));
+    const n = Number(String(v).replace(/,/g, "")); // Strip commas for user-friendly input
     return Number.isFinite(n) ? n : NaN;
   }
+  
+  // Format number to fixed decimal places; returns "—" for invalid numbers
   function fmt(v, d){ return Number.isFinite(v) ? v.toFixed(d) : "—"; }
+  
+  // Format number with magnitude abbreviation (M=millions, K=thousands) for chart labels and large values
   function fmtShort(v, d){
     d = d === undefined ? 1 : d;
     if (!Number.isFinite(v)) return "—";
@@ -38,20 +48,28 @@
     if (abs >= 1000) return (v / 1000).toFixed(d).replace(/\.0$/, "") + "K";
     return v.toFixed(0);
   }
+  
+  // Format number with thousands separator (comma grouping) for display
   function fmtComma(v, d){
     d = d === undefined ? 0 : d;
     if (!Number.isFinite(v)) return "—";
     return Number(v.toFixed(d)).toLocaleString();
   }
 
+// === DENSITY TYPE STATE ===
+// Tracks previous density input method (sg vs lb/gal) to enable conversion when user switches types
 let feedDensityTypePrevious = "sg";
 let slugDensityTypePrevious = "sg";
 let inhibDensityTypePrevious = "sg";
 let biocideDensityTypePrevious = "sg";
 
+// === UNIT CONVERSION ===
+// Converts all input field values when user toggles between imperial and metric units.
+// Key formula: feed lb/day = dose × gpm × 1440 min/day × 8.34 lb/gal / 1,000,000
 function convertUnitFields(previousMetric, newMetric){
   if (previousMetric === newMetric) return;
 
+  // Volume fields: gallons ↔ liters
   const galToLFields = ['volume', 'biocideVolume'];
 
   galToLFields.forEach(id => {
@@ -66,6 +84,7 @@ function convertUnitFields(previousMetric, newMetric){
       : fmt(value / GAL_TO_L, 2);
   });
 
+  // Flow rate fields: gpm ↔ m³/hr (1 gpm = 0.227 m³/hr)
   const gpmToM3hrFields = ['flow', 'bleedRate', 'recircFlow'];
 
   gpmToM3hrFields.forEach(id => {
@@ -104,11 +123,16 @@ function convertUnitFields(previousMetric, newMetric){
         : fmt((value * 9 / 5) + 32, 1);
     });
   }
+  // === DENSITY CONVERSION ===
+  // Convert density to lb/gal for calculations. SG × 8.34 = lb/gal (where 8.34 is water density)
   function densityToLbGal(value, type){
     if (!Number.isFinite(value) || value <= 0) return NaN;
     return type === "lbgal" ? value : value * WATER_LB_PER_GAL;
   }
 
+  // === DENSITY VALIDATION ===
+  // Checks density inputs against reasonable bounds to catch data entry errors
+  // Typical range: SG 1.0-1.5 (0.5-12.5 lb/gal). Alerts user if outside normal range.
   function densityWarning(value, type){
     if (!Number.isFinite(value) || value <= 0) return "";
     if (type === "sg" && value > 1.5) return '<div class="warning">⚠️ Specific gravity is above 1.5. Confirm density entry.</div>';
@@ -117,12 +141,20 @@ function convertUnitFields(previousMetric, newMetric){
     if (type === "lbgal" && value > 12.5) return '<div class="warning">⚠️ Density is above 12.5 lb/gal. Confirm density entry.</div>';
     return "";
   }
+  // === DYNAMIC LABEL UPDATES ===
+  // Updates density field labels to match selected input type (SG or lb/gal)
+  // Called when user changes the densityType dropdown
   function updateDensityLabels(){
     if ($("densityLabel")) $("densityLabel").innerText = $("densityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
     if ($("slugDensityLabel")) $("slugDensityLabel").innerText = $("slugDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
     if ($("inhibDensityLabel")) $("inhibDensityLabel").innerText = $("inhibDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
     if ($("biocideDensityLabel")) $("biocideDensityLabel").innerText = $("biocideDensityType").value === "lbgal" ? "Density (lb/gal)" : "Density (SG)";
   }
+  // === FEED RATE CALCULATION ===
+  // Core calculation: daily product requirement based on system flow and target dose
+  // Formula: lb/day = dose(ppm) × flow(gpm) × 1440(min/day) × 8.34 / 1,000,000
+  // Converts to metric (kg/day, L/day) if isMetric flag is true
+  // Also provides pump guidance based on selected pump control type and capacity
   function calcFeed(){
     const dose = toNumber($("dose").value);
     const flowInput = toNumber($("flow").value);
@@ -138,8 +170,9 @@ function convertUnitFields(previousMetric, newMetric){
       return;
     }
 
+    // Convert flow to gpm for calculation; adjust if user is in metric mode
     const gpm = isMetric ? flowInput / GPM_TO_M3HR : flowInput;
-    const lbDay = dose * gpm * 1440 * WATER_LB_PER_GAL / 1000000;
+    const lbDay = dose * gpm * 1440 * WATER_LB_PER_GAL / 1000000; // Core feed calculation
     const galDay = lbDay / lbPerGal;
     const galHr = galDay / 24;
     const displayDailyVol = isMetric ? galDay * GAL_TO_L : galDay;
@@ -169,6 +202,9 @@ function convertUnitFields(previousMetric, newMetric){
   }
 
   function calcSlug(){
+    // === SLUG DOSE CALCULATION ===
+    // One-time product addition to reach target dose in system volume
+    // Formula: lb = dose(ppm) × gallons / 120,000
     const dose = toNumber($("slugPpm").value);
     const volInput = toNumber($("volume").value);
     const densityInput = toNumber($("slugDensity").value);
@@ -189,6 +225,10 @@ function convertUnitFields(previousMetric, newMetric){
   }
 
   function calcCycles(){
+    // === CYCLES OF CONCENTRATION ===
+    // Ratio of dissolved solids in tower water vs makeup water: Tower ÷ Makeup
+    // Used to determine evaporation rate and bleed requirements in cooling towers
+    // Formula: cycles = tower_concentration / makeup_concentration (same basis units required)
     const basis = $("cycleBasis").value;
     const makeup = toNumber($("makeupCycleValue").value);
     const tower = toNumber($("towerCycleValue").value);
@@ -237,6 +277,9 @@ function convertUnitFields(previousMetric, newMetric){
   }
 
   function calcBiocide(){
+    // === BIOCIDE DOSE CALCULATION ===
+    // One-time biocide addition for microbiological control
+    // Same formula as slug: lb = dose(ppm) × gallons / 120,000
     const dose = toNumber($('biocidePpm').value);
     const volInput = toNumber($('biocideVolume').value);
     const densityInput = toNumber($('biocideDensity').value);
@@ -257,6 +300,10 @@ function convertUnitFields(previousMetric, newMetric){
   }
 
   function calcPumpCal(){
+    // === PUMP CALIBRATION ===
+    // Determine actual pump output (gph) from field drawdown test
+    // Formula: gph = collected_volume(mL) / 1000 / 3.78541 / (collection_time_min / 60)
+    // Caches result in latestPumpGph for import to pump capacity field
     const volInput = toNumber($('pumpCalVolume').value);
     const minutes = toNumber($('pumpCalTime').value);
     if (!volInput || !minutes){ $('pumpCalResult').innerHTML = '<div class="warning">Enter collected volume and collection time.</div>'; return; }
@@ -484,6 +531,10 @@ function convertUnitFields(previousMetric, newMetric){
    }
 
   function calcInhib(){
+    // === INHIBITOR REQUIREMENT ===
+    // Calculates daily inhibitor product needed based on bleed rate
+    // Can pull bleed rate from cooling tower calculation or manual entry
+    // Formula: lb/day = dose(ppm) × bleed(gpm) × 1440 × 8.34 / 1,000,000
     syncCoolingBleedToInhib();
     const bleedInput = toNumber($('bleedRate').value);
     const dose = toNumber($('inhibPpm').value);
@@ -511,6 +562,11 @@ function convertUnitFields(previousMetric, newMetric){
   }
 
   function calcCooling(){
+    // === COOLING TOWER BALANCE ===
+    // Calculates evaporation, bleed (blowdown), and makeup requirements for cooling tower systems
+    // Three methods for estimating evaporation: Flow×ΔT, Centrifugal tons, or Absorption tons
+    // Key formulas: evap(gpm) varies by method; bleed = evap/(cycles-1); makeup = evap + bleed
+    // Cache latest bleed for use by inhibitor feed calculation
     const evapMethod = $('evapMethod').value;
     const cycles = toNumber($('cycles').value);
     $('anyTowerInputs').style.display = evapMethod === 'anyTower' ? 'block' : 'none';
@@ -556,6 +612,10 @@ function convertUnitFields(previousMetric, newMetric){
   }
 
   function setUnits(metric){
+    // === UNIT SYSTEM TOGGLE ===
+    // Convert all fields and labels between imperial (false) and metric (true)
+    // Updates isMetric flag, toggles button states, relabels all inputs, converts existing values,
+    // and recalculates all results to match new unit system
     const previousMetric = isMetric;
     convertUnitFields(previousMetric, metric);
 
@@ -597,7 +657,39 @@ function convertUnitFields(previousMetric, newMetric){
     console.assert(nearly((100 * 1000 / 120000), 0.8333, 0.01), 'Slug/biocide lb sanity test failed');
   }
 
+function initScrollReveal() {
+  const revealSections = document.querySelectorAll('.reveal-section');
+
+  if (!revealSections.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    let delay = 0;
+
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, delay);
+
+        delay += 80;
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.05
+  });
+
+  revealSections.forEach((section) => observer.observe(section));
+}
+
   function bind(){
+    // === EVENT BINDING ===
+    // Central setup for all event listeners. Pattern:
+    // - UoM buttons (Imperial/Metric) trigger setUnits() with conversion
+    // - Navigation buttons trigger showSection() with tab switching
+    // - Input fields trigger both 'input' (live) and 'change' (committed) events
+    // - Each input group attached to corresponding calc function (e.g., calcFeed)
+    // NOTE: To add new calculations, add event listeners here and implement calc function
     $('btnImp').addEventListener('click', () => setUnits(false));
     $('btnMet').addEventListener('click', () => setUnits(true));
 
@@ -612,11 +704,11 @@ function convertUnitFields(previousMetric, newMetric){
     ['slugPpm','volume','slugDensity','slugDensityType'].forEach(id => $(id).addEventListener('input', () => { updateDensityLabels(); calcSlug(); }));
     ['slugPpm','volume','slugDensity','slugDensityType'].forEach(id => $(id).addEventListener('change', () => { updateDensityLabels(); calcSlug(); }));
 
-    $('slugDensityType').addEventListener('change', () => {
-        slugDensityTypePrevious = convertDensityField('slugDensity', 'slugDensityType', slugDensityTypePrevious);
-        updateDensityLabels(); 
-        calcSlug();
-    });
+    // $('slugDensityType').addEventListener('change', () => {
+    //     slugDensityTypePrevious = convertDensityField('slugDensity', 'slugDensityType', slugDensityTypePrevious);
+    //     updateDensityLabels(); 
+    //     calcSlug();
+    // });
 
     ['cycleBasis','makeupCycleValue','towerCycleValue'].forEach(id => $(id).addEventListener('input', calcCycles));
     ['cycleBasis','makeupCycleValue','towerCycleValue'].forEach(id => $(id).addEventListener('change', calcCycles));
@@ -666,10 +758,13 @@ function convertUnitFields(previousMetric, newMetric){
     });
   }
 
+  // === INITIALIZATION SEQUENCE ===
+  // Startup order: bind listeners → run tests → configure UI → set imperial mode → show feed tab
   bind();
   runSelfTests();
   updateDensityLabels();
   updateLSIModeUI();
-  setUnits(false);
-  showSection('feed');
+  setUnits(false);           // Initialize with imperial units; false = imperial, true = metric
+  showSection('feed');       // Display feed rate calculator on app load
+  initScrollReveal();       // Set up scroll reveal for content sections
 })();
