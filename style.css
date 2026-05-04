@@ -343,8 +343,14 @@ svg text {
 
 @media (min-width: 701px) {
   .container {
-    max-width: 720px;   /* ← better balance */
+    max-width: 640px;   /* ← better balance */
   }
+
+  .nav {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
 
   .nav {
     grid-template-columns: 1fr 1fr;
