@@ -421,3 +421,30 @@ label,
   padding: 12px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
+
+@media (max-width: 700px) {
+  .container {
+    max-width: 100%;
+    padding: 12px;
+  }
+
+  .nav {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  #feedSection,
+  #slugSection,
+  #cyclesSection,
+  #coolingSection,
+  #inhibSection,
+  #biocideSection,
+  #pumpCalSection,
+  #lsiSection {
+    padding: 10px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+}
