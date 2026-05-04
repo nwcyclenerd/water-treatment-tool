@@ -21,6 +21,11 @@ body {
     radial-gradient(circle at 30% 0%, rgba(255,255,255,0.35), transparent 28%),
     linear-gradient(180deg, #7dd3fc 0%, #0ea5e9 22%, #0369a1 55%, #0f172a 100%);
   background-attachment: fixed;
+
+  /* ADD THESE */
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
 }
 
 body::before {
@@ -76,7 +81,7 @@ body::before {
 
 .nav {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr !important;
   gap: 12px;
   margin-bottom: 32px;
 }
@@ -339,17 +344,6 @@ svg text {
 .reveal-section.visible {
   opacity: 1;
   transform: translateY(0) scale(1);
-}
-
-@media (min-width: 701px) {
-  .container {
-    max-width: 640px;   /* ← better balance */
-  }
-
-  .nav {
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
 }
 
   .nav {
