@@ -1,36 +1,26 @@
 :root {
-  --bg-main: #1f2933;
-  --bg-card: #2c3a45;
-  --bg-card-soft: #344553;
-
+  --bg-main: #0f172a;
+  --bg-card: rgba(15, 23, 42, 0.72);
   --input-bg: #ffffff;
   --input-text: #111827;
   --input-border: #cbd5e1;
-
   --text-main: #f9fafb;
   --text-muted: #d1d5db;
-
-  --output-bg: #111827;
-  --output-text: #ffffff;
-
-  --accent: #38bdf8;
+  --accent: #60a5fa;
 }
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-
+  color: var(--text-main);
   background:
     radial-gradient(circle at 30% 0%, rgba(255,255,255,0.35), transparent 28%),
-    linear-gradient(
-      180deg,
-      #7dd3fc 0%,
-      #0ea5e9 22%,
-      #0369a1 55%,
-      #0f172a 100%
-    );
-
+    linear-gradient(180deg, #7dd3fc 0%, #0ea5e9 22%, #0369a1 55%, #0f172a 100%);
   background-attachment: fixed;
-  color: var(--text-main);
 }
 
 body::before {
@@ -38,33 +28,33 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-
   background:
     linear-gradient(105deg, rgba(255,255,255,0.18), transparent 18%),
     linear-gradient(75deg, rgba(255,255,255,0.12), transparent 22%),
     linear-gradient(95deg, rgba(255,255,255,0.08), transparent 30%);
-
-  opacity: 0.55;
+  opacity: 0.45;
   z-index: -1;
 }
 
 .container {
+  width: 100%;
   max-width: 440px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px;
 }
 
 .header {
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 12px;
-  background: #111827;
+  background: rgba(17, 24, 39, 0.92);
   color: white;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.28);
 }
 
 .title {
   font-size: 22px;
-  font-weight: bold;
+  font-weight: 800;
   margin-bottom: 6px;
 }
 
@@ -78,32 +68,95 @@ body::before {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
 .uom button {
-  flex: 1 1 45%;
+  flex: 1;
+}
+
+.nav {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.nav-group {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.28);
+}
+
+.nav-title {
+  color: #e5e7eb;
+  font-weight: 800;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.nav-group button {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.nav-group button:last-child {
+  margin-bottom: 0;
+}
+
+button {
   padding: 10px;
   border-radius: 10px;
-  border: none;
-  background: #e2e8f0;
-  font-weight: bold;
+  border: 1px solid #cbd5e1;
+  background: #e5e7eb;
+  color: #111827;
+  font-weight: 700;
   cursor: pointer;
 }
 
+button:hover {
+  background: #d1d5db;
+}
+
+button.active,
+.nav button.active,
+.uom button.active,
+.chart-controls button.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+#feedSection,
+#slugSection,
+#cyclesSection,
+#coolingSection,
+#inhibSection,
+#biocideSection,
+#pumpCalSection,
+#lsiSection {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-radius: 18px;
+  padding: 10px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
 .card {
-  border: 1px solid #d9dee7;
+  border: 1px solid rgba(217, 222, 231, 0.9);
   border-radius: 16px;
-  padding: 14px;
+  padding: 12px;
   margin-bottom: 12px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255,255,255,0.94);
   color: #111827;
   box-shadow: 0 1px 3px rgba(15,23,42,0.08);
 }
 
 .section-title {
   font-size: 15px;
-  font-weight: bold;
+  font-weight: 800;
   margin-bottom: 10px;
 }
 
@@ -113,7 +166,7 @@ body::before {
 
 label {
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 700;
   display: block;
   margin-bottom: 4px;
   color: #111827;
@@ -126,9 +179,28 @@ label {
   line-height: 1.35;
 }
 
+input,
+select,
+textarea {
+  width: 100%;
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .result-main {
   font-size: 28px;
-  font-weight: bold;
+  font-weight: 800;
   margin-bottom: 6px;
 }
 
@@ -170,219 +242,6 @@ label {
   line-height: 1.35;
 }
 
-    .index-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    margin-bottom: 14px;
-    }
-
-    .index-pill {
-    border-radius: 14px;
-    padding: 14px;
-    background: #e2e8f0;
-    text-align: center;
-    border: 1px solid #cbd5e1;
-    }
-
-    .index-label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #475569;
-    margin-bottom: 4px;
-    }
-
-    .index-value {
-    font-size: 1.8rem;
-    font-weight: 800;
-    }
-
-    .index-pill.good {
-    background: #dcfce7;
-    border-color: #86efac;
-    }
-
-    .index-pill.watch {
-    background: #fef9c3;
-    border-color: #fde047;
-    }
-
-    .index-pill.caution {
-    background: #ffedd5;
-    border-color: #fdba74;
-    }
-
-    .index-pill.bad {
-    background: #fee2e2;
-    border-color: #fca5a5;
-    }
-
-    /* Keep calculator cards light */
-    .card {
-    background: rgba(255, 255, 255, 0.92);
-    color: #111827;
-    }
-
-    /* Keep form fields light */
-    input,
-    select {
-    background: white;
-    color: #111827;
-    }
-
-    /* ===== BUTTON CONTRAST FIX ===== */
-
-    /* Inactive buttons */
-    .nav button,
-    .uom button,
-    .chart-controls button {
-    background: #e5e7eb;
-    color: #111827;
-    border: 1px solid #cbd5e1;
-    }
-
-    /* Hover effect */
-    .nav button:hover,
-    .uom button:hover,
-    .chart-controls button:hover {
-    background: #d1d5db;
-    }
-
-    /* Active buttons */
-    .nav button.active,
-    .uom button.active,
-    .chart-controls button.active {
-    background: #60a5fa;
-    color: #ffffff;
-    }
-
-    /* ===== NAV GROUP LAYOUT ===== */
-
-.nav {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  align-items: start;
-}
-
-.nav-group {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 14px;
-  padding: 12px;
-}
-
-.nav-title {
-  color: #e5e7eb;
-  font-weight: 800;
-  font-size: 0.9rem;
-  margin-bottom: 8px;
-}
-
-.nav-group button {
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-.nav-group button:last-child {
-  margin-bottom: 0;
-}
-
-@media (max-width: 700px) {
-  .nav {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Final nav grouping override */
-.nav {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  align-items: start;
-  margin-bottom: 32px; 
-}
-
-.nav-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.nav-group button {
-  flex: none !important;
-  width: 100%;
-}
-
-.calculator-section,
-.input-section,
-.results-section,
-.next-steps-section,
-.section-card {
-  background: var(--bg-card);
-  color: var(--text-main);
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
-}
-
-input,
-select,
-textarea {
-  background: var(--input-bg);
-  color: var(--input-text);
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 1rem;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-label,
-.field-label {
-  color: #111827;
-  font-weight: 600;
-}
-
-.helper-text,
-.input-note {
-  color: var(--text-muted);
-}
-
-.result-card,
-.output-box {
-  background: var(--output-bg);
-  color: var(--output-text);
-  border-radius: 12px;
-  padding: 14px;
-  font-weight: 600;
-  border-left: 4px solid var(--accent);
-}
-
-.result-card .result-value,
-.output-box .result-value {
-  color: var(--output-text);
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.next-step-card {
-  background: var(--bg-card-soft);
-  color: var(--text-main);
-  border-radius: 12px;
-  padding: 14px;
-  border-left: 4px solid var(--accent);
-}
-
-.reveal-section {
-  margin-bottom: 28px;   /* base spacing between sections */
-}
-
 #feedResult,
 #slugResult,
 #cyclesResult,
@@ -391,7 +250,90 @@ label,
 #biocideResult,
 #pumpCalResult,
 #lsiResult {
-  margin-top: 18px;      /* separation from inputs → results */
+  margin-top: 18px;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.chart-controls button {
+  flex: 1;
+  font-size: 12px;
+}
+
+.chart-wrap {
+  margin-top: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.chart-label {
+  font-size: 12px;
+  color: #475569;
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+svg text {
+  font-family: Arial, sans-serif;
+}
+
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.index-pill {
+  border-radius: 14px;
+  padding: 14px;
+  background: #e2e8f0;
+  text-align: center;
+  border: 1px solid #cbd5e1;
+}
+
+.index-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.index-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+.index-pill.good {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.index-pill.watch {
+  background: #fef9c3;
+  border-color: #fde047;
+}
+
+.index-pill.caution {
+  background: #ffedd5;
+  border-color: #fdba74;
+}
+
+.index-pill.bad {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.reveal-section {
+  opacity: 0;
+  transform: translateY(50px) scale(0.98);
+  transition: opacity 500ms ease, transform 500ms ease;
 }
 
 .reveal-section.visible {
@@ -399,52 +341,22 @@ label,
   transform: translateY(0) scale(1);
 }
 
+@media (min-width: 701px) {
+  .container {
+    max-width: 960px;
+    padding: 16px;
+  }
+
+  .nav {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal-section {
     opacity: 1;
     transform: none;
     transition: none;
-  }
-}
-
-#feedSection,
-#slugSection,
-#cyclesSection,
-#coolingSection,
-#inhibSection,
-#biocideSection,
-#pumpCalSection,
-#lsiSection {
-  background: var(--bg-card);
-  color: var(--text-main);
-  border-radius: 14px;
-  padding: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
-}
-
-@media (max-width: 700px) {
-  .container {
-    max-width: 100%;
-    padding: 12px;
-  }
-
-  .nav {
-    grid-template-columns: 1fr !important;
-    gap: 12px;
-  }
-
-  #feedSection,
-  #slugSection,
-  #cyclesSection,
-  #coolingSection,
-  #inhibSection,
-  #biocideSection,
-  #pumpCalSection,
-  #lsiSection {
-    padding: 10px;
-  }
-
-  .card {
-    padding: 12px;
   }
 }
